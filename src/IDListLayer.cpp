@@ -174,7 +174,10 @@ void IDListLayer::populateList(std::string query) {
     if (m_countLabel->getScaledContentSize().width > 100.0f) m_countLabel->setScale(60.0f / m_countLabel->getScaledContentSize().width);
     auto glm = GameLevelManager::sharedState();
     glm->m_levelManagerDelegate = this;
-    glm->getOnlineLevels(GJSearchObject::create(SearchType::MapPackOnClick, join(searchResults, ",")));
+    auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, join(searchResults, ","));
+    auto storedLevels = glm->getStoredOnlineLevels(searchObject->getKey());
+    if (storedLevels) this->loadLevelsFinished(storedLevels, "");
+    else glm->getOnlineLevels(searchObject);
 }
 
 void IDListLayer::loadLevelsFinished(cocos2d::CCArray* levels, const char*) {
