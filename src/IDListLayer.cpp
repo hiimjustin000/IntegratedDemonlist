@@ -246,7 +246,9 @@ void IDListLayer::loadLevelsFailed(const char*) {
 }
 
 void IDListLayer::onExit(CCObject*) {
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(GJSearchObject::create(SearchType::MapPack))));
+    auto scene = CCScene::create();
+    scene->addChild(LevelSearchLayer::create(1));
+    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
 }
 
 void IDListLayer::onSearch(CCObject*) {

@@ -1,6 +1,7 @@
 #include "IDListLayer.hpp"
 
 #include <Geode/modify/LevelBrowserLayer.hpp>
+#include <Geode/modify/LevelSearchLayer.hpp>
 #include <Geode/modify/LevelCell.hpp>
 #include <Geode/modify/MenuLayer.hpp>
 
@@ -12,28 +13,27 @@ class $modify(IDMenuLayer, MenuLayer) {
     }
 };
 
-class $modify(IDLevelBrowserLayer, LevelBrowserLayer) {
-    bool init(GJSearchObject* searchObject) {
-        if (!LevelBrowserLayer::init(searchObject)) return false;
-        if (searchObject->m_searchType == SearchType::MapPack) {
-            auto menu = CCMenu::create();
+class $modify(IDLevelSearchLayer, LevelSearchLayer) {
+    bool init(int searchType) {
+        if (!LevelSearchLayer::init(searchType)) return false;
+        if (searchType == 1) {
             auto demonlistButtonSprite = CCSprite::create("IDDemonlistButton.png"_spr);
-            auto y = demonlistButtonSprite->getContentSize().height / 2 + 4;
-            menu->setPosition(CCDirector::sharedDirector()->getScreenRight() - y, y);
-            menu->setZOrder(2);
-            menu->setID("demonlist-menu"_spr);
-            auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelBrowserLayer::onDemonList));
+            demonlistButtonSprite->setScale(0.8f);
+            auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
             demonlistButton->setID("demonlist-button"_spr);
+            auto menu = static_cast<CCMenu*>(this->getChildByID("other-filter-menu"));
+            demonlistButton->setPosition(
+                (CCDirector::sharedDirector()->getScreenRight() - demonlistButtonSprite->getContentSize().width) / 2 - 2,
+                static_cast<CCMenuItemSpriteExtra*>(menu->getChildren()->lastObject())->getPositionY() - 50
+            );
             menu->addChild(demonlistButton);
-            this->addChild(menu);
         }
         return true;
     }
 
     void onDemonList(CCObject*) {
         auto scene = CCScene::create();
-        auto layer = IDListLayer::create();
-        scene->addChild(layer);
+        scene->addChild(IDListLayer::create());
         CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
     }
 };
