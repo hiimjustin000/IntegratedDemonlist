@@ -1,6 +1,15 @@
 #include "IDListLayer.hpp"
 #include <Geode/utils/web.hpp>
 
+template<typename T>
+std::vector<T> pluck(matjson::Value const& json, std::string const& key) {
+    std::vector<T> ret;
+    for (auto const& val : json.as_array()) {
+        if (!val.contains("legacy") || !val["legacy"].as_bool()) ret.push_back(val[key].as<T>());
+    }
+    return ret;
+};
+
 std::string join(std::vector<int> const& vec, std::string const& delim) {
     std::string ret;
     for (auto const& i : vec) {
@@ -45,11 +54,22 @@ IDListLayer* IDListLayer::create() {
     return nullptr;
 }
 
+void IDListLayer::loadAREDL(utils::MiniFunction<void()> callback) {
+    web::AsyncWebRequest()
+        .get("https://api.aredl.net/api/aredl/list")
+        .json()
+        .then([callback](matjson::Value const& json) {
+            AREDL = pluck<int>(json, "level_id");
+            AREDL_NAMES = pluck<std::string>(json, "name");
+            AREDL_POSITIONS = pluck<int>(json, "position");
+            callback();
+        });
+}
+
 bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
 
-    auto director = CCDirector::sharedDirector();
-    auto winSize = director->getWinSize();
+    auto winSize = CCDirector::sharedDirector()->getWinSize();
 
     auto bg = CCSprite::create("GJ_gradientBG.png");
     auto bgSize = bg->getTextureRect().size;
@@ -61,10 +81,21 @@ bool IDListLayer::init() {
     bg->setColor({ 51, 51, 51 });
     this->addChild(bg);
 
+    auto bottomLeftCorner = CCSprite::createWithSpriteFrameName("gauntletCorner_001.png");
+    bottomLeftCorner->setPosition({ -1.0f, -1.0f });
+    bottomLeftCorner->setAnchorPoint({ 0.0f, 0.0f });
+    this->addChild(bottomLeftCorner);
+
+    auto bottomRightCorner = CCSprite::createWithSpriteFrameName("gauntletCorner_001.png");
+    bottomRightCorner->setPosition({ winSize.width + 1.0f, -1.0f });
+    bottomRightCorner->setAnchorPoint({ 1.0f, 0.0f });
+    bottomRightCorner->setFlipX(true);
+    this->addChild(bottomRightCorner);
+
     m_countLabel = CCLabelBMFont::create("", "goldFont.fnt");
     m_countLabel->setAnchorPoint({ 1.0f, 1.0f });
     m_countLabel->setScale(0.6f);
-    m_countLabel->setPosition(director->getScreenRight() - 7.0f, director->getScreenTop() - 3.0f);
+    m_countLabel->setPosition(winSize.width - 7.0f, winSize.height - 3.0f);
     this->addChild(m_countLabel);
 
     m_list = GJListLayer::create(CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
@@ -92,13 +123,13 @@ bool IDListLayer::init() {
     this->addChild(m_backMenu);
 
     m_leftMenu = CCMenu::create();
-    m_leftMenu->setPosition(director->getScreenLeft() + 24.0f, winSize.height / 2);
+    m_leftMenu->setPosition(24.0f, winSize.height / 2);
     auto leftBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"), this, menu_selector(IDListLayer::onLeft));
     m_leftMenu->addChild(leftBtn);
     this->addChild(m_leftMenu);
 
     m_rightMenu = CCMenu::create();
-    m_rightMenu->setPosition(director->getScreenRight() - 24.0f, winSize.height / 2);
+    m_rightMenu->setPosition(winSize.width - 24.0f, winSize.height / 2);
     auto rightBtnSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
     rightBtnSpr->setFlipX(true);
     auto rightBtn = CCMenuItemSpriteExtra::create(rightBtnSpr, this, menu_selector(IDListLayer::onRight));
@@ -106,10 +137,21 @@ bool IDListLayer::init() {
     this->addChild(m_rightMenu);
 
     m_infoMenu = CCMenu::create();
-    m_infoMenu->setPosition(director->getScreenLeft() + 30.0f, director->getScreenBottom() + 30.0f);
+    m_infoMenu->setPosition(30.0f, 30.0f);
+    m_infoMenu->setZOrder(2);
     auto infoBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png"), this, menu_selector(IDListLayer::onInfo));
     m_infoMenu->addChild(infoBtn);
     this->addChild(m_infoMenu);
+
+    m_refreshMenu = CCMenu::create();
+    auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
+    auto y = refreshBtnSpr->getContentSize().height / 2 + 4;
+    m_refreshMenu->setPosition(CCDirector::sharedDirector()->getScreenRight() - y, y);
+    m_refreshMenu->setZOrder(2);
+    auto refreshBtn = CCMenuItemSpriteExtra::create(refreshBtnSpr, this, menu_selector(IDListLayer::onRefresh));
+    refreshBtn->setID("demonlist-button"_spr);
+    m_refreshMenu->addChild(refreshBtn);
+    this->addChild(m_refreshMenu);
 
     m_loadingCircle = LoadingCircle::create();
     this->addChild(m_loadingCircle);
@@ -145,6 +187,7 @@ void IDListLayer::addSearchBar() {
 }
 
 void IDListLayer::populateList(std::string query) {
+    m_loadingCircle->setVisible(true);
     m_loadingCircle->show();
     m_list->m_listView->setVisible(false);
     m_searchBarView->setVisible(false);
@@ -182,7 +225,7 @@ void IDListLayer::populateList(std::string query) {
 
 void IDListLayer::loadLevelsFinished(cocos2d::CCArray* levels, const char*) {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
-    this->removeChild(m_list);
+    if (m_list->getParent() == this) this->removeChild(m_list);
     m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2);
@@ -192,6 +235,14 @@ void IDListLayer::loadLevelsFinished(cocos2d::CCArray* levels, const char*) {
     m_countLabel->setVisible(true);
     m_loadingCircle->fadeAndRemove();
     m_loadingCircle->setVisible(false);
+}
+
+void IDListLayer::loadLevelsFailed(const char*) {
+    m_searchBar->setVisible(true);
+    m_countLabel->setVisible(true);
+    m_loadingCircle->fadeAndRemove();
+    m_loadingCircle->setVisible(false);
+    FLAlertLayer::create("Load Failed", "Failed to load levels. Please try again later.", "OK")->show();
 }
 
 void IDListLayer::onExit(CCObject*) {
@@ -217,4 +268,10 @@ void IDListLayer::onInfo(CCObject*) {
     std::string line1 = "The <cg>All Rated Extreme Demons List</c> (AREDL) is an unofficial ranking of all rated <cr>Extreme Demons</c> in Geometry Dash.\n";
     std::string line2 = "It is managed by <cy>iiLogan</c>, <cy>SEDTHEPRODIGY</c>, <cy>Megu</c>, and <cy>Minebox260</c>.";
     FLAlertLayer::create("AREDL", line1 + line2, "OK")->show();
+}
+
+void IDListLayer::onRefresh(CCObject*) {
+    loadAREDL([this]() {
+        populateList(m_query);
+    });
 }

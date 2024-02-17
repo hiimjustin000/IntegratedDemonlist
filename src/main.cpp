@@ -7,16 +7,7 @@
 class $modify(IDMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
-        if (IDListLayer::AREDL.empty()) {
-            web::AsyncWebRequest()
-                .get("https://api.aredl.net/api/aredl/list")
-                .json()
-                .then([this](matjson::Value const& json) {
-                    IDListLayer::AREDL = IDListLayer::pluck<int>(json, "level_id");
-                    IDListLayer::AREDL_NAMES = IDListLayer::pluck<std::string>(json, "name");
-                    IDListLayer::AREDL_POSITIONS = IDListLayer::pluck<int>(json, "position");
-                });
-        }
+        if (IDListLayer::AREDL.empty()) IDListLayer::loadAREDL();
         return true;
     }
 };
@@ -26,12 +17,13 @@ class $modify(IDLevelBrowserLayer, LevelBrowserLayer) {
         if (!LevelBrowserLayer::init(searchObject)) return false;
         if (searchObject->m_searchType == SearchType::MapPack) {
             auto menu = CCMenu::create();
-            auto director = CCDirector::sharedDirector();
             auto demonlistButtonSprite = CCSprite::create("IDDemonlistButton.png"_spr);
             auto y = demonlistButtonSprite->getContentSize().height / 2 + 4;
-            menu->setPosition(director->getScreenRight() - y, director->getScreenBottom() + y);
+            menu->setPosition(CCDirector::sharedDirector()->getScreenRight() - y, y);
             menu->setZOrder(2);
+            menu->setID("demonlist-menu"_spr);
             auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelBrowserLayer::onDemonList));
+            demonlistButton->setID("demonlist-button"_spr);
             menu->addChild(demonlistButton);
             this->addChild(menu);
         }
