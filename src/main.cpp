@@ -39,7 +39,7 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
 };
 
 // Thanks Cvolton for the code
-// https://github.com/Cvolton/betterinfo-geode/blob/master/src/hooks/LevelCell.cpp#L113
+// https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelCell.cpp#L113
 class $modify(IDLevelCell, LevelCell) {
     void loadCustomLevelCell() {
         LevelCell::loadCustomLevelCell();

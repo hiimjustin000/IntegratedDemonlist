@@ -1,4 +1,12 @@
 # Integrated Demonlist Changelog
+## v1.3.0 (2024-02-21)
+- Added keyboard shortcuts to the demonlist page (Esc to close the search menu, Left/Right to navigate between pages)
+- Added jump to page functionality to the demonlist page
+- Added buttons to jump to the first and last page of the demonlist
+- Added a button to jump to a random page of the demonlist
+- Fixed a bug where the next page button would be visible even when there are no more pages
+- Fixed a bug where the last item index in the page label would be incorrect when the last page is not full
+
 ## v1.2.0 (2024-02-17)
 - Moved the demonlist button to the list search menu
 
