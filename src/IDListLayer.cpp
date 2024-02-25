@@ -63,11 +63,15 @@ void IDListLayer::loadAREDL(utils::MiniFunction<void()> callback) {
             AREDL_NAMES = pluck<std::string>(json, "name");
             AREDL_POSITIONS = pluck<int>(json, "position");
             callback();
+        })
+        .expect([](std::string const& error) {
+            FLAlertLayer::create("Load Failed", "Failed to load AREDL. Please try again later.", "OK")->show();
         });
 }
 
 bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
+    this->setID("IDListLayer"_spr);
 
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
@@ -153,8 +157,8 @@ bool IDListLayer::init() {
     m_refreshMenu->addChild(refreshBtn);
     this->addChild(m_refreshMenu);
 
-    auto rightSearchMenu = CCMenu::create();
-    rightSearchMenu->setPositionY(-39.5f);
+    m_rightSearchMenu = CCMenu::create();
+    m_rightSearchMenu->setPositionY(-39.5f);
     auto pageBtnSpr = CCSprite::create("GJ_button_02.png");
     pageBtnSpr->setScale(0.7f);
     m_pageLabel = CCLabelBMFont::create("1", "bigFont.fnt");
@@ -163,13 +167,13 @@ bool IDListLayer::init() {
     pageBtnSpr->addChild(m_pageLabel);
     auto pageBtn = CCMenuItemSpriteExtra::create(pageBtnSpr, this, menu_selector(IDListLayer::onPage));
     pageBtn->setPositionY(winSize.height);
-    rightSearchMenu->addChild(pageBtn);
+    m_rightSearchMenu->addChild(pageBtn);
     // Sprite by Cvolton
     auto randomBtnSpr = CCSprite::create("BI_randomBtn_001.png"_spr);
     randomBtnSpr->setScale(0.9f);
     auto randomBtn = CCMenuItemSpriteExtra::create(randomBtnSpr, this, menu_selector(IDListLayer::onRandom));
     randomBtn->setPositionY(winSize.height - randomBtn->getContentSize().height - 4.15f);
-    rightSearchMenu->addChild(randomBtn);
+    m_rightSearchMenu->addChild(randomBtn);
     // oh boy
     // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelBrowserLayer.cpp#L118
     auto firstArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
@@ -185,11 +189,11 @@ bool IDListLayer::init() {
     arrowParent->setScale(0.4f);
     m_lastButton = CCMenuItemSpriteExtra::create(arrowParent, this, menu_selector(IDListLayer::onLast));
     m_lastButton->setPositionY(winSize.height - randomBtn->getContentSize().height - m_lastButton->getContentSize().height - 11.0f);
-    rightSearchMenu->addChild(m_lastButton);
-    rightSearchMenu->setPositionX(winSize.width - 3.0f - randomBtn->getContentSize().width / 2);
-    this->addChild(rightSearchMenu);
-    auto leftSearchMenu = CCMenu::create();
-    leftSearchMenu->setPosition(17.5f, winSize.height - 64.0f);
+    m_rightSearchMenu->addChild(m_lastButton);
+    m_rightSearchMenu->setPositionX(winSize.width - 3.0f - randomBtn->getContentSize().width / 2);
+    this->addChild(m_rightSearchMenu);
+    m_leftSearchMenu = CCMenu::create();
+    m_leftSearchMenu->setPosition(17.5f, winSize.height - 64.0f);
     // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelBrowserLayer.cpp#L164
     auto otherFirstArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
     otherFirstArrow->setPosition({ 35, 34.5 });
@@ -201,14 +205,18 @@ bool IDListLayer::init() {
     otherArrowParent->addChild(otherSecondArrow);
     otherArrowParent->setScale(0.4f);
     m_firstButton = CCMenuItemSpriteExtra::create(otherArrowParent, this, menu_selector(IDListLayer::onFirst));
-    leftSearchMenu->addChild(m_firstButton);
-    this->addChild(leftSearchMenu);
+    m_leftSearchMenu->addChild(m_firstButton);
+    this->addChild(m_leftSearchMenu);
 
     m_loadingCircle = LoadingCircle::create();
     this->addChild(m_loadingCircle);
 
     m_searchBarView->setVisible(false);
     m_searchBar->setVisible(false);
+    m_leftSearchMenu->setVisible(false);
+    m_leftSearchMenu->setEnabled(false);
+    m_rightSearchMenu->setVisible(false);
+    m_rightSearchMenu->setEnabled(false);
 
     setKeyboardEnabled(true);
     populateList("");
@@ -247,6 +255,18 @@ void IDListLayer::populateList(std::string query) {
     m_searchBarView->setVisible(false);
     m_searchBar->setVisible(false);
     m_countLabel->setVisible(false);
+    m_leftMenu->setVisible(false);
+    m_leftMenu->setEnabled(false);
+    m_rightMenu->setVisible(false);
+    m_rightMenu->setEnabled(false);
+    m_firstButton->setVisible(false);
+    m_firstButton->setEnabled(false);
+    m_lastButton->setVisible(false);
+    m_lastButton->setEnabled(false);
+    m_leftSearchMenu->setVisible(false);
+    m_leftSearchMenu->setEnabled(false);
+    m_rightSearchMenu->setVisible(false);
+    m_rightSearchMenu->setEnabled(false);
     if (query.compare(m_query) != 0 && !query.empty()) {
         auto queryLowercase = toLowerCase(query);
         m_fullSearchResults = {};
@@ -256,15 +276,6 @@ void IDListLayer::populateList(std::string query) {
     }
     m_query = query;
     if (query.empty()) m_fullSearchResults = AREDL;
-    auto maxPage = paddedSize(m_fullSearchResults.size(), 10) / 10 - 1;
-    m_leftMenu->setEnabled(m_page > 0);
-    m_rightMenu->setEnabled(m_page < maxPage);
-    m_firstButton->setEnabled(m_page > 0);
-    m_lastButton->setEnabled(m_page < maxPage);
-    m_leftMenu->setVisible(m_page > 0);
-    m_rightMenu->setVisible(m_page < maxPage);
-    m_firstButton->setVisible(m_page > 0);
-    m_lastButton->setVisible(m_page < maxPage);
     auto minimum = std::min(static_cast<int>(m_fullSearchResults.size()), (m_page + 1) * 10);
     auto searchResults = std::vector<int>(m_fullSearchResults.begin() + m_page * 10, m_fullSearchResults.begin() + minimum);
     m_countLabel->setString(fmt::format("{} to {} of {}", m_page * 10 + 1, minimum, m_fullSearchResults.size()).c_str());
@@ -291,6 +302,21 @@ void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     m_countLabel->setVisible(true);
     m_loadingCircle->fadeAndRemove();
     m_loadingCircle->setVisible(false);
+    if (m_fullSearchResults.size() > 10) {
+        auto maxPage = paddedSize(m_fullSearchResults.size(), 10) / 10 - 1;
+        m_leftSearchMenu->setVisible(true);
+        m_leftSearchMenu->setEnabled(true);
+        m_rightSearchMenu->setVisible(true);
+        m_rightSearchMenu->setEnabled(true);
+        m_leftMenu->setEnabled(m_page > 0);
+        m_rightMenu->setEnabled(m_page < maxPage);
+        m_firstButton->setEnabled(m_page > 0);
+        m_lastButton->setEnabled(m_page < maxPage);
+        m_leftMenu->setVisible(m_page > 0);
+        m_rightMenu->setVisible(m_page < maxPage);
+        m_firstButton->setVisible(m_page > 0);
+        m_lastButton->setVisible(m_page < maxPage);
+    }
 }
 
 void IDListLayer::loadLevelsFailed(const char*) {
@@ -308,8 +334,12 @@ void IDListLayer::onExit(CCObject*) {
 }
 
 void IDListLayer::onSearch(CCObject*) {
-    m_page = 0;
-    populateList(m_searchBar->getString());
+    if (m_query.compare(m_searchBar->getString()) != 0) {
+        loadAREDL([this]() {
+            m_page = 0;
+            populateList(m_searchBar->getString());
+        });
+    }
 }
 
 void IDListLayer::onLeft(CCObject*) {
@@ -367,7 +397,7 @@ void IDListLayer::keyDown(enumKeyCodes key) {
             if (m_rightMenu->isVisible()) this->onRight(nullptr);
             break;
         case KEY_Escape:
-        case CONTROLLER_Back:
+        case CONTROLLER_B:
             this->onExit(nullptr);
             break;
         default:

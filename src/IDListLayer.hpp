@@ -1,5 +1,4 @@
 #include <Geode/Geode.hpp>
-#include <Geode/utils/web.hpp>
 
 using namespace geode::prelude;
 
@@ -32,6 +31,8 @@ protected:
     CCMenu* m_rightMenu;
     CCMenu* m_infoMenu;
     CCMenu* m_refreshMenu;
+    CCMenu* m_leftSearchMenu;
+    CCMenu* m_rightSearchMenu;
     CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
     CCLayerColor* m_searchBarView;

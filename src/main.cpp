@@ -4,6 +4,7 @@
 #include <Geode/modify/LevelSearchLayer.hpp>
 #include <Geode/modify/LevelCell.hpp>
 #include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/CCKeyboardDispatcher.hpp>
 
 class $modify(IDMenuLayer, MenuLayer) {
     bool init() {
@@ -65,5 +66,16 @@ class $modify(IDLevelCell, LevelCell) {
                 if (m_level->m_dailyID > 0) rankTextNode->setPositionY(6);
             }
         }
+    }
+};
+
+class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
+    bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
+        auto layer = CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"_spr);
+        if (key == KEY_Enter && down && layer) {
+            static_cast<IDListLayer*>(layer)->onSearch(nullptr);
+            return true;
+        }
+        else return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
     }
 };
