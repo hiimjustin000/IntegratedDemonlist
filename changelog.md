@@ -1,4 +1,8 @@
 # Integrated Demonlist Changelog
+## v1.3.1 (2024-02-21)
+- Added a setting to enable the ranking text on the demon's search box, and enabled it by default
+- Added support for Android and macOS
+
 ## v1.3.0 (2024-02-21)
 - Added keyboard shortcuts to the demonlist page (Esc to close the search menu, Left/Right to navigate between pages)
 - Added jump to page functionality to the demonlist page

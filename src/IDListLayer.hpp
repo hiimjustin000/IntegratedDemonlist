@@ -3,7 +3,7 @@
 
 using namespace geode::prelude;
 
-class IDListLayer : public CCLayer, SetIDPopupDelegate, LevelManagerDelegate, TextInputDelegate {
+class IDListLayer : public CCLayer, SetIDPopupDelegate, LevelManagerDelegate {
 public:
     inline static std::vector<int> AREDL = {};
     inline static std::vector<std::string> AREDL_NAMES = {};
@@ -44,26 +44,17 @@ protected:
     std::string m_query = "";
     std::vector<int> m_fullSearchResults;
 
-    bool init();
+    bool init() override;
     void addSearchBar();
     void populateList(std::string query);
-    void loadLevelsFinished(cocos2d::CCArray* levels, const char*);
-    void loadLevelsFailed(const char*);
-    void loadLevelsFinished(cocos2d::CCArray* levels, const char* test, int) {
+    void loadLevelsFinished(CCArray* levels, const char*) override;
+    void loadLevelsFailed(const char*) override;
+    void loadLevelsFinished(CCArray* levels, const char* test, int) override {
         loadLevelsFinished(levels, test);
     }
-    void loadLevelsFailed(const char* test, int) {
+    void loadLevelsFailed(const char* test, int) override {
         loadLevelsFailed(test);
     }
-    void setupPageInfo(std::string, const char*) {}
-    void textChanged(CCTextInputNode*) {}
-    void textInputOpened(CCTextInputNode*) {}
-    void textInputClosed(CCTextInputNode*) {}
-    void textInputShouldOffset(CCTextInputNode*, float) {}
-    void textInputReturn(CCTextInputNode*) {}
-    bool allowTextInput(CCTextInputNode*) {
-        return true;
-    }
-    void enterPressed(CCTextInputNode*);
-    void setIDPopupClosed(SetIDPopup*, int);
+    void setupPageInfo(gd::string, const char*) override {}
+    void setIDPopupClosed(SetIDPopup*, int) override;
 };

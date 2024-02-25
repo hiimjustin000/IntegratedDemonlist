@@ -44,22 +44,26 @@ class $modify(IDLevelCell, LevelCell) {
     void loadCustomLevelCell() {
         LevelCell::loadCustomLevelCell();
 
-        auto found = std::find(IDListLayer::AREDL.begin(), IDListLayer::AREDL.end(), m_level->m_levelID.value());
-        if (found != IDListLayer::AREDL.end()) {
-            auto rankTextNode = CCLabelBMFont::create(fmt::format("#{} on AREDL", IDListLayer::AREDL_POSITIONS[found - IDListLayer::AREDL.begin()]).c_str(), "chatFont.fnt");
-            rankTextNode->setPosition(346.0f, m_compactView ? 9.0f : 12.0f);
-            rankTextNode->setAnchorPoint({ 1.0f, 1.0f });
-            rankTextNode->setScale(m_compactView ? 0.45f : 0.6f);
-            rankTextNode->setColor({ 51, 51, 51 });
-            rankTextNode->setOpacity(152);
-            rankTextNode->setID("level-rank-label"_spr);
-            m_mainLayer->addChild(rankTextNode);
-            if (m_level->m_dailyID > 0 || Mod::get()->getSettingValue<bool>("white-rank")) {
-                rankTextNode->setColor({ 255, 255, 255 });
-                rankTextNode->setOpacity(200);
-            }
+        if (Mod::get()->getSettingValue<bool>("enable-rank")) {
+            auto begin = IDListLayer::AREDL.begin();
+            auto end = IDListLayer::AREDL.end();
+            auto found = std::find(begin, end, m_level->m_levelID.value());
+            if (found != end) {
+                auto rankTextNode = CCLabelBMFont::create(fmt::format("#{} on AREDL", IDListLayer::AREDL_POSITIONS[found - begin]).c_str(), "chatFont.fnt");
+                rankTextNode->setPosition(346.0f, m_compactView ? 9.0f : 12.0f);
+                rankTextNode->setAnchorPoint({ 1.0f, 1.0f });
+                rankTextNode->setScale(m_compactView ? 0.45f : 0.6f);
+                rankTextNode->setColor({ 51, 51, 51 });
+                rankTextNode->setOpacity(152);
+                rankTextNode->setID("level-rank-label"_spr);
+                m_mainLayer->addChild(rankTextNode);
+                if (m_level->m_dailyID > 0 || Mod::get()->getSettingValue<bool>("white-rank")) {
+                    rankTextNode->setColor({ 255, 255, 255 });
+                    rankTextNode->setOpacity(200);
+                }
 
-            if (m_level->m_dailyID > 0) rankTextNode->setPositionY(6);
+                if (m_level->m_dailyID > 0) rankTextNode->setPositionY(6);
+            }
         }
     }
 };

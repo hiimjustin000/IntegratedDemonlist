@@ -114,7 +114,6 @@ bool IDListLayer::init() {
     m_searchBar->m_placeholderLabel->setAnchorPoint({ 0.0f, 0.5f });
     m_searchBar->setPosition(winSize.width / 2 - 160.f, winSize.height / 2 + 95.f);
     m_searchBar->setZOrder(60);
-    m_searchBar->m_delegate = this;
     this->addChild(m_searchBar);
 
     m_backMenu = CCMenu::create();
@@ -280,7 +279,7 @@ void IDListLayer::populateList(std::string query) {
     else glm->getOnlineLevels(searchObject);
 }
 
-void IDListLayer::loadLevelsFinished(cocos2d::CCArray* levels, const char*) {
+void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     if (m_list->getParent() == this) this->removeChild(m_list);
     m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
@@ -375,10 +374,6 @@ void IDListLayer::keyDown(enumKeyCodes key) {
             CCLayer::keyDown(key);
             break;
     }
-}
-
-void IDListLayer::enterPressed(CCTextInputNode*) {
-    this->onSearch(nullptr);
 }
 
 void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
