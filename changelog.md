@@ -1,5 +1,8 @@
 # Integrated Demonlist Changelog
-## v1.3.1 (2024-02-21)
+## v1.3.2 (2024-02-25)
+- Moved the demonlist button to the level search menu
+
+## v1.3.1 (2024-02-24)
 - Added a setting to enable the ranking text on the demon's search box, and enabled it by default
 - Added support for Android and macOS
 

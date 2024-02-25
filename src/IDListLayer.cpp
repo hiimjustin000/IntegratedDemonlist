@@ -303,7 +303,7 @@ void IDListLayer::loadLevelsFailed(const char*) {
 
 void IDListLayer::onExit(CCObject*) {
     auto scene = CCScene::create();
-    scene->addChild(LevelSearchLayer::create(1));
+    scene->addChild(LevelSearchLayer::create(0));
     CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
 }
 
