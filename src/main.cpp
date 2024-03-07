@@ -1,6 +1,5 @@
 #include "IDListLayer.hpp"
 
-#include <Geode/modify/LevelBrowserLayer.hpp>
 #include <Geode/modify/LevelSearchLayer.hpp>
 #include <Geode/modify/LevelCell.hpp>
 #include <Geode/modify/MenuLayer.hpp>
@@ -17,18 +16,18 @@ class $modify(IDMenuLayer, MenuLayer) {
 class $modify(IDLevelSearchLayer, LevelSearchLayer) {
     bool init(int searchType) {
         if (!LevelSearchLayer::init(searchType)) return false;
-        if (searchType == 0) {
-            auto demonlistButtonSprite = CCSprite::create("IDDemonlistButton.png"_spr);
-            demonlistButtonSprite->setScale(0.8f);
-            auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
-            demonlistButton->setID("demonlist-button"_spr);
-            auto menu = static_cast<CCMenu*>(this->getChildByID("other-filter-menu"));
-            demonlistButton->setPosition(
-                (CCDirector::sharedDirector()->getScreenRight() - demonlistButtonSprite->getContentSize().width) / 2 - 2,
-                static_cast<CCMenuItemSpriteExtra*>(menu->getChildren()->lastObject())->getPositionY() - 50
-            );
-            menu->addChild(demonlistButton);
-        }
+
+        auto demonlistButtonSprite = CCSprite::create("IDDemonlistButton.png"_spr);
+        demonlistButtonSprite->setScale(0.8f);
+        auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
+        demonlistButton->setID("demonlist-button"_spr);
+        auto menu = static_cast<CCMenu*>(this->getChildByID("other-filter-menu"));
+        demonlistButton->setPosition(
+            (CCDirector::sharedDirector()->getScreenRight() - demonlistButtonSprite->getContentSize().width) / 2 - 2,
+            static_cast<CCMenuItemSpriteExtra*>(menu->getChildren()->lastObject())->getPositionY() - 50
+        );
+        menu->addChild(demonlistButton);
+
         return true;
     }
 

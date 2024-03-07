@@ -329,7 +329,20 @@ void IDListLayer::loadLevelsFailed(const char*) {
 
 void IDListLayer::onExit(CCObject*) {
     auto scene = CCScene::create();
-    scene->addChild(LevelSearchLayer::create(0));
+    auto gm = GameManager::sharedState();
+#ifdef GEODE_IS_WINDOWS
+    auto onlineType = *(int*)((uintptr_t)gm + 0x3d4);
+#elif GEODE_IS_MACOS
+    auto onlineType = *(int*)((uintptr_t)gm + 0x4b8);
+#elif GEODE_IS_ANDROID32
+    auto onlineType = *(int*)((uintptr_t)gm + 0x3bc);
+#elif GEODE_IS_ANDROID64
+    auto onlineType = *(int*)((uintptr_t)gm + 0x4d8);
+#else
+    auto onlineType = 0;
+#endif
+
+    scene->addChild(LevelSearchLayer::create(onlineType));
     CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
 }
 
