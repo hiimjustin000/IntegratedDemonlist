@@ -332,11 +332,11 @@ void IDListLayer::onExit(CCObject*) {
     auto gm = GameManager::sharedState();
 #ifdef GEODE_IS_WINDOWS
     auto onlineType = *(int*)((uintptr_t)gm + 0x3d4);
-#elif GEODE_IS_MACOS
+#elif defined(GEODE_IS_MACOS)
     auto onlineType = *(int*)((uintptr_t)gm + 0x4b8);
-#elif GEODE_IS_ANDROID32
+#elif defined(GEODE_IS_ANDROID32)
     auto onlineType = *(int*)((uintptr_t)gm + 0x3bc);
-#elif GEODE_IS_ANDROID64
+#elif defined(GEODE_IS_ANDROID64)
     auto onlineType = *(int*)((uintptr_t)gm + 0x4d8);
 #else
     auto onlineType = 0;
