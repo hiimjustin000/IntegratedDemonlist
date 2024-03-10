@@ -1,4 +1,5 @@
 #include "IDListLayer.hpp"
+#include <random>
 #include <Geode/utils/web.hpp>
 
 template<typename T>
@@ -17,21 +18,6 @@ std::string join(std::vector<int> const& vec, std::string const& delim) {
     }
     if (!ret.empty()) ret = ret.substr(0, ret.size() - delim.size());
     return ret;
-}
-
-std::vector<std::string> split(std::string const& str, std::string const& delim) {
-    size_t pos_start = 0, pos_end, delim_len = delim.length();
-    std::string token;
-    std::vector<std::string> res;
-
-    while ((pos_end = str.find(delim, pos_start)) != std::string::npos) {
-        token = str.substr(pos_start, pos_end - pos_start);
-        pos_start = pos_end + delim_len;
-        res.push_back(token);
-    }
-
-    res.push_back(str.substr(pos_start));
-    return res;
 }
 
 std::string toLowerCase(std::string str) {
@@ -76,7 +62,7 @@ bool IDListLayer::init() {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
     auto bg = CCSprite::create("GJ_gradientBG.png");
-    auto bgSize = bg->getTextureRect().size;
+    CCSize bgSize = bg->getTextureRect().size;
 
     bg->setAnchorPoint({ 0.0f, 0.0f });
     bg->setScaleX((winSize.width + 10.0f) / bgSize.width);
@@ -153,7 +139,6 @@ bool IDListLayer::init() {
     m_refreshMenu->setPosition(CCDirector::sharedDirector()->getScreenRight() - y, y);
     m_refreshMenu->setZOrder(2);
     auto refreshBtn = CCMenuItemSpriteExtra::create(refreshBtnSpr, this, menu_selector(IDListLayer::onRefresh));
-    refreshBtn->setID("demonlist-button"_spr);
     m_refreshMenu->addChild(refreshBtn);
     this->addChild(m_refreshMenu);
 
@@ -371,7 +356,11 @@ void IDListLayer::onPage(CCObject*) {
 }
 
 void IDListLayer::onRandom(CCObject*) {
-    m_page = rand() % (paddedSize(m_fullSearchResults.size(), 10) / 10);
+    std::random_device os_seed;
+    const unsigned int seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_int_distribution<int> distribute(0, paddedSize(m_fullSearchResults.size(), 10) / 10 - 1);
+    m_page = distribute(generator);
     populateList(m_query);
 }
 

@@ -11,7 +11,7 @@ public:
     static void loadAREDL() {
         loadAREDL([]() {});
     }
-    static void loadAREDL(utils::MiniFunction<void()> callback);
+    static void loadAREDL(MiniFunction<void()> callback);
 
     void onExit(CCObject*);
     void onSearch(CCObject*);
