@@ -40,24 +40,26 @@ IDListLayer* IDListLayer::create() {
     return nullptr;
 }
 
-void IDListLayer::loadAREDL(utils::MiniFunction<void()> callback) {
+void IDListLayer::loadAREDL(bool fromMenuLayer, utils::MiniFunction<void()> callback) {
     web::AsyncWebRequest()
         .get("https://api.aredl.net/api/aredl/list")
         .json()
-        .then([callback](matjson::Value const& json) {
+        .then([fromMenuLayer, callback](matjson::Value const& json) {
             AREDL = pluck<int>(json, "level_id");
             AREDL_NAMES = pluck<std::string>(json, "name");
             AREDL_POSITIONS = pluck<int>(json, "position");
+            if (fromMenuLayer) Notification::create("AREDL Loaded", NotificationIcon::Success)->show();
             callback();
         })
-        .expect([](std::string const& error) {
-            FLAlertLayer::create("Load Failed", "Failed to load AREDL. Please try again later.", "OK")->show();
+        .expect([fromMenuLayer](std::string const& error) {
+            if (fromMenuLayer) Notification::create("AREDL Load Failed", NotificationIcon::Error)->show();
+            else FLAlertLayer::create("Load Failed", "Failed to load AREDL. Please try again later.", "OK")->show();
         });
 }
 
 bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
-    this->setID("IDListLayer"_spr);
+    setID("IDListLayer"_spr);
 
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
@@ -69,29 +71,29 @@ bool IDListLayer::init() {
     bg->setScaleY((winSize.height + 10.0f) / bgSize.height);
     bg->setPosition({ -5.0f, -5.0f });
     bg->setColor({ 51, 51, 51 });
-    this->addChild(bg);
+    addChild(bg);
 
     auto bottomLeftCorner = CCSprite::createWithSpriteFrameName("gauntletCorner_001.png");
     bottomLeftCorner->setPosition({ -1.0f, -1.0f });
     bottomLeftCorner->setAnchorPoint({ 0.0f, 0.0f });
-    this->addChild(bottomLeftCorner);
+    addChild(bottomLeftCorner);
 
     auto bottomRightCorner = CCSprite::createWithSpriteFrameName("gauntletCorner_001.png");
     bottomRightCorner->setPosition({ winSize.width + 1.0f, -1.0f });
     bottomRightCorner->setAnchorPoint({ 1.0f, 0.0f });
     bottomRightCorner->setFlipX(true);
-    this->addChild(bottomRightCorner);
+    addChild(bottomRightCorner);
 
     m_countLabel = CCLabelBMFont::create("", "goldFont.fnt");
     m_countLabel->setAnchorPoint({ 1.0f, 1.0f });
     m_countLabel->setScale(0.6f);
     m_countLabel->setPosition(winSize.width - 7.0f, winSize.height - 3.0f);
-    this->addChild(m_countLabel);
+    addChild(m_countLabel);
 
     m_list = GJListLayer::create(CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2);
-    this->addChild(m_list);
+    addChild(m_list);
 
     addSearchBar();
 
@@ -104,19 +106,19 @@ bool IDListLayer::init() {
     m_searchBar->m_placeholderLabel->setAnchorPoint({ 0.0f, 0.5f });
     m_searchBar->setPosition(winSize.width / 2 - 160.f, winSize.height / 2 + 95.f);
     m_searchBar->setZOrder(60);
-    this->addChild(m_searchBar);
+    addChild(m_searchBar);
 
     m_backMenu = CCMenu::create();
     auto backBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"), this, menu_selector(IDListLayer::onExit));
     backBtn->setPosition(-winSize.width / 2 + 25.0f, winSize.height / 2 - 25.0f);
     m_backMenu->addChild(backBtn);
-    this->addChild(m_backMenu);
+    addChild(m_backMenu);
 
     m_leftMenu = CCMenu::create();
     m_leftMenu->setPosition(24.0f, winSize.height / 2);
     auto leftBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png"), this, menu_selector(IDListLayer::onLeft));
     m_leftMenu->addChild(leftBtn);
-    this->addChild(m_leftMenu);
+    addChild(m_leftMenu);
 
     m_rightMenu = CCMenu::create();
     m_rightMenu->setPosition(winSize.width - 24.0f, winSize.height / 2);
@@ -124,14 +126,14 @@ bool IDListLayer::init() {
     rightBtnSpr->setFlipX(true);
     auto rightBtn = CCMenuItemSpriteExtra::create(rightBtnSpr, this, menu_selector(IDListLayer::onRight));
     m_rightMenu->addChild(rightBtn);
-    this->addChild(m_rightMenu);
+    addChild(m_rightMenu);
 
     m_infoMenu = CCMenu::create();
     m_infoMenu->setPosition(30.0f, 30.0f);
     m_infoMenu->setZOrder(2);
     auto infoBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_infoIcon_001.png"), this, menu_selector(IDListLayer::onInfo));
     m_infoMenu->addChild(infoBtn);
-    this->addChild(m_infoMenu);
+    addChild(m_infoMenu);
 
     m_refreshMenu = CCMenu::create();
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
@@ -140,7 +142,7 @@ bool IDListLayer::init() {
     m_refreshMenu->setZOrder(2);
     auto refreshBtn = CCMenuItemSpriteExtra::create(refreshBtnSpr, this, menu_selector(IDListLayer::onRefresh));
     m_refreshMenu->addChild(refreshBtn);
-    this->addChild(m_refreshMenu);
+    addChild(m_refreshMenu);
 
     m_rightSearchMenu = CCMenu::create();
     m_rightSearchMenu->setPositionY(-39.5f);
@@ -176,7 +178,7 @@ bool IDListLayer::init() {
     m_lastButton->setPositionY(winSize.height - randomBtn->getContentSize().height - m_lastButton->getContentSize().height - 11.0f);
     m_rightSearchMenu->addChild(m_lastButton);
     m_rightSearchMenu->setPositionX(winSize.width - 3.0f - randomBtn->getContentSize().width / 2);
-    this->addChild(m_rightSearchMenu);
+    addChild(m_rightSearchMenu);
     m_leftSearchMenu = CCMenu::create();
     m_leftSearchMenu->setPosition(17.5f, winSize.height - 64.0f);
     // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelBrowserLayer.cpp#L164
@@ -191,10 +193,10 @@ bool IDListLayer::init() {
     otherArrowParent->setScale(0.4f);
     m_firstButton = CCMenuItemSpriteExtra::create(otherArrowParent, this, menu_selector(IDListLayer::onFirst));
     m_leftSearchMenu->addChild(m_firstButton);
-    this->addChild(m_leftSearchMenu);
+    addChild(m_leftSearchMenu);
 
     m_loadingCircle = LoadingCircle::create();
-    this->addChild(m_loadingCircle);
+    addChild(m_loadingCircle);
 
     m_searchBarView->setVisible(false);
     m_searchBar->setVisible(false);
@@ -204,7 +206,7 @@ bool IDListLayer::init() {
     m_rightSearchMenu->setEnabled(false);
 
     setKeyboardEnabled(true);
-    populateList("");
+    if (!AREDL.empty()) populateList("");
 
     return true;
 }
@@ -271,17 +273,17 @@ void IDListLayer::populateList(std::string query) {
     glm->m_levelManagerDelegate = this;
     auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, join(searchResults, ","));
     auto storedLevels = glm->getStoredOnlineLevels(searchObject->getKey());
-    if (storedLevels) this->loadLevelsFinished(storedLevels, "");
+    if (storedLevels) loadLevelsFinished(storedLevels, "");
     else glm->getOnlineLevels(searchObject);
 }
 
 void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
-    if (m_list->getParent() == this) this->removeChild(m_list);
+    if (m_list->getParent() == this) removeChild(m_list);
     m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2);
-    this->addChild(m_list);
+    addChild(m_list);
     addSearchBar();
     m_searchBar->setVisible(true);
     m_countLabel->setVisible(true);
@@ -320,7 +322,7 @@ void IDListLayer::onExit(CCObject*) {
 
 void IDListLayer::onSearch(CCObject*) {
     if (m_query.compare(m_searchBar->getString()) != 0) {
-        loadAREDL([this]() {
+        loadAREDL(false, [this]() {
             m_page = 0;
             populateList(m_searchBar->getString());
         });
@@ -344,7 +346,7 @@ void IDListLayer::onInfo(CCObject*) {
 }
 
 void IDListLayer::onRefresh(CCObject*) {
-    loadAREDL([this]() {
+    loadAREDL(false, [this]() {
         populateList(m_query);
     });
 }
@@ -379,15 +381,15 @@ void IDListLayer::keyDown(enumKeyCodes key) {
     {
         case KEY_Left:
         case CONTROLLER_Left:
-            if (m_leftMenu->isVisible()) this->onLeft(nullptr);
+            if (m_leftMenu->isVisible()) onLeft(nullptr);
             break;
         case KEY_Right:
         case CONTROLLER_Right:
-            if (m_rightMenu->isVisible()) this->onRight(nullptr);
+            if (m_rightMenu->isVisible()) onRight(nullptr);
             break;
         case KEY_Escape:
         case CONTROLLER_B:
-            this->onExit(nullptr);
+            onExit(nullptr);
             break;
         default:
             CCLayer::keyDown(key);

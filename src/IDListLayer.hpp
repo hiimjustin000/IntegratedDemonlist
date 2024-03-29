@@ -7,11 +7,12 @@ public:
     inline static std::vector<int> AREDL = {};
     inline static std::vector<std::string> AREDL_NAMES = {};
     inline static std::vector<int> AREDL_POSITIONS = {};
+    inline static bool AREDL_TRIED_LOADING = false;
     static IDListLayer* create();
-    static void loadAREDL() {
-        loadAREDL([]() {});
+    static void loadAREDL(bool fromMenuLayer) {
+        loadAREDL(fromMenuLayer, []() {});
     }
-    static void loadAREDL(MiniFunction<void()> callback);
+    static void loadAREDL(bool fromMenuLayer, MiniFunction<void()> callback);
 
     void onExit(CCObject*);
     void onSearch(CCObject*);

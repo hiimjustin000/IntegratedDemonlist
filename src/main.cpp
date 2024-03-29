@@ -8,7 +8,10 @@
 class $modify(IDMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
-        if (IDListLayer::AREDL.empty()) IDListLayer::loadAREDL();
+        if (!IDListLayer::AREDL_TRIED_LOADING) {
+            IDListLayer::AREDL_TRIED_LOADING = true;
+            IDListLayer::loadAREDL(true);
+        }
         return true;
     }
 };
@@ -21,7 +24,7 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
         demonlistButtonSprite->setScale(0.8f);
         auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
         demonlistButton->setID("demonlist-button"_spr);
-        auto menu = static_cast<CCMenu*>(this->getChildByID("other-filter-menu"));
+        auto menu = static_cast<CCMenu*>(getChildByID("other-filter-menu"));
         demonlistButton->setPosition(
             (CCDirector::sharedDirector()->getScreenRight() - demonlistButtonSprite->getContentSize().width) / 2 - 2,
             static_cast<CCMenuItemSpriteExtra*>(menu->getChildren()->lastObject())->getPositionY() - 50
