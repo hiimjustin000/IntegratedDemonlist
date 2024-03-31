@@ -14,7 +14,7 @@ public:
     }
     static void loadAREDL(bool fromMenuLayer, MiniFunction<void()> callback);
 
-    void onExit(CCObject*);
+    void onClose(CCObject*);
     void onSearch(CCObject*);
     void onLeft(CCObject*);
     void onRight(CCObject*);
@@ -25,6 +25,7 @@ public:
     void onFirst(CCObject*);
     void onLast(CCObject*);
     void keyDown(enumKeyCodes) override;
+    void keyBackClicked() override;
 protected:
     GJListLayer* m_list;
     CCMenu* m_backMenu;

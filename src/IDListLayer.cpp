@@ -109,7 +109,7 @@ bool IDListLayer::init() {
     addChild(m_searchBar);
 
     m_backMenu = CCMenu::create();
-    auto backBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"), this, menu_selector(IDListLayer::onExit));
+    auto backBtn = CCMenuItemSpriteExtra::create(CCSprite::createWithSpriteFrameName("GJ_arrow_01_001.png"), this, menu_selector(IDListLayer::onClose));
     backBtn->setPosition(-winSize.width / 2 + 25.0f, winSize.height / 2 - 25.0f);
     m_backMenu->addChild(backBtn);
     addChild(m_backMenu);
@@ -314,7 +314,7 @@ void IDListLayer::loadLevelsFailed(const char*) {
     FLAlertLayer::create("Load Failed", "Failed to load levels. Please try again later.", "OK")->show();
 }
 
-void IDListLayer::onExit(CCObject*) {
+void IDListLayer::onClose(CCObject*) {
     auto scene = CCScene::create();
     scene->addChild(LevelSearchLayer::create(GameManager::sharedState()->m_unkSize4_17));
     CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
@@ -389,12 +389,16 @@ void IDListLayer::keyDown(enumKeyCodes key) {
             break;
         case KEY_Escape:
         case CONTROLLER_B:
-            onExit(nullptr);
+            onClose(nullptr);
             break;
         default:
             CCLayer::keyDown(key);
             break;
     }
+}
+
+void IDListLayer::keyBackClicked() {
+    onClose(nullptr);
 }
 
 void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
