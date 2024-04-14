@@ -25,11 +25,8 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
         auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
         demonlistButton->setID("demonlist-button"_spr);
         auto menu = static_cast<CCMenu*>(getChildByID("other-filter-menu"));
-        demonlistButton->setPosition(
-            (CCDirector::sharedDirector()->getScreenRight() - demonlistButtonSprite->getContentSize().width) / 2 - 2,
-            static_cast<CCMenuItemSpriteExtra*>(menu->getChildren()->lastObject())->getPositionY() - 50
-        );
         menu->addChild(demonlistButton);
+        menu->updateLayout();
 
         return true;
     }

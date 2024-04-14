@@ -42,7 +42,7 @@ IDListLayer* IDListLayer::create() {
 
 void IDListLayer::loadAREDL(bool fromMenuLayer, utils::MiniFunction<void()> callback) {
     web::AsyncWebRequest()
-        .get("https://api.aredl.net/api/aredl/list")
+        .get("https://api.aredl.net/api/aredl/levels")
         .json()
         .then([fromMenuLayer, callback](matjson::Value const& json) {
             AREDL = pluck<int>(json, "level_id");
