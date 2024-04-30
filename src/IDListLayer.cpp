@@ -1,5 +1,6 @@
 #include "IDListLayer.hpp"
 #include <random>
+#include <Geode/utils/string.hpp>
 #include <Geode/utils/web.hpp>
 
 template<typename T>
@@ -8,15 +9,6 @@ std::vector<T> pluck(matjson::Value const& json, std::string const& key) {
     for (auto const& val : json.as_array()) {
         if (!val.contains("legacy") || !val["legacy"].as_bool()) ret.push_back(val[key].as<T>());
     }
-    return ret;
-};
-
-std::string join(std::vector<int> const& vec, std::string const& delim) {
-    std::string ret;
-    for (auto const& i : vec) {
-        ret += std::to_string(i) + delim;
-    }
-    if (!ret.empty()) ret = ret.substr(0, ret.size() - delim.size());
     return ret;
 }
 
@@ -235,7 +227,6 @@ void IDListLayer::addSearchBar() {
 
 void IDListLayer::populateList(std::string query) {
     m_pageLabel->setString(std::to_string(m_page + 1).c_str());
-    m_pageLabel->updateLabel();
     m_loadingCircle->setVisible(true);
     m_loadingCircle->show();
     m_list->m_listView->setVisible(false);
@@ -263,17 +254,19 @@ void IDListLayer::populateList(std::string query) {
     }
     m_query = query;
     if (query.empty()) m_fullSearchResults = AREDL;
-    auto minimum = std::min(static_cast<int>(m_fullSearchResults.size()), (m_page + 1) * 10);
-    auto searchResults = std::vector<int>(m_fullSearchResults.begin() + m_page * 10, m_fullSearchResults.begin() + minimum);
-    m_countLabel->setString(fmt::format("{} to {} of {}", m_page * 10 + 1, minimum, m_fullSearchResults.size()).c_str());
-    m_countLabel->updateLabel();
-    m_countLabel->setScale(0.6f);
-    if (m_countLabel->getScaledContentSize().width > 100.0f) m_countLabel->setScale(60.0f / m_countLabel->getScaledContentSize().width);
+
     auto glm = GameLevelManager::sharedState();
     glm->m_levelManagerDelegate = this;
-    auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, join(searchResults, ","));
+    auto searchResults = std::vector<int>(m_fullSearchResults.begin() + m_page * 10,
+        m_fullSearchResults.begin() + std::min(static_cast<int>(m_fullSearchResults.size()), (m_page + 1) * 10));
+    auto searchResultsStr = std::vector<std::string>(searchResults.size());
+    std::transform(searchResults.begin(), searchResults.end(), searchResultsStr.begin(), [](int i) { return std::to_string(i); });
+    auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, string::join(searchResultsStr, ","));
     auto storedLevels = glm->getStoredOnlineLevels(searchObject->getKey());
-    if (storedLevels) loadLevelsFinished(storedLevels, "");
+    if (storedLevels) {
+        loadLevelsFinished(storedLevels, "");
+        setupPageInfo("", "");
+    }
     else glm->getOnlineLevels(searchObject);
 }
 
@@ -312,6 +305,12 @@ void IDListLayer::loadLevelsFailed(const char*) {
     m_loadingCircle->fadeAndRemove();
     m_loadingCircle->setVisible(false);
     FLAlertLayer::create("Load Failed", "Failed to load levels. Please try again later.", "OK")->show();
+}
+
+void IDListLayer::setupPageInfo(gd::string, const char*) {
+    m_countLabel->setString(fmt::format("{} to {} of {}", m_page * 10 + 1,
+        std::min(static_cast<int>(m_fullSearchResults.size()), (m_page + 1) * 10), m_fullSearchResults.size()).c_str());
+    m_countLabel->limitLabelWidth(100.0f, 0.6f, 0.0f);
 }
 
 void IDListLayer::onClose(CCObject*) {

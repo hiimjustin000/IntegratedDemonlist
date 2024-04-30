@@ -52,12 +52,12 @@ protected:
     void populateList(std::string query);
     void loadLevelsFinished(CCArray* levels, const char*) override;
     void loadLevelsFailed(const char*) override;
-    void loadLevelsFinished(CCArray* levels, const char* test, int) override {
-        loadLevelsFinished(levels, test);
+    void loadLevelsFinished(CCArray* levels, const char* key, int) override {
+        loadLevelsFinished(levels, key);
     }
-    void loadLevelsFailed(const char* test, int) override {
-        loadLevelsFailed(test);
+    void loadLevelsFailed(const char* key, int) override {
+        loadLevelsFailed(key);
     }
-    void setupPageInfo(gd::string, const char*) override {}
+    void setupPageInfo(gd::string, const char*) override;
     void setIDPopupClosed(SetIDPopup*, int) override;
 };
