@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.4.6 (2024-04-30)
+- Tweaked the appearance of the demonlist button
+
 ## v1.4.5 (2024-04-13)
 - Fixed a bug where the demonlist button would not appear
 

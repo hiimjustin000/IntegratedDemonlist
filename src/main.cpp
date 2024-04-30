@@ -20,7 +20,7 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
     bool init(int searchType) {
         if (!LevelSearchLayer::init(searchType)) return false;
 
-        auto demonlistButtonSprite = CCSprite::create("IDDemonlistButton.png"_spr);
+        auto demonlistButtonSprite = CircleButtonSprite::createWithSpriteFrameName("diffIcon_10_btn_001.png", 1.0f, CircleBaseColor::Pink, CircleBaseSize::Medium);
         demonlistButtonSprite->setScale(0.8f);
         auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
         demonlistButton->setID("demonlist-button"_spr);

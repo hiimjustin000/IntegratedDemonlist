@@ -315,9 +315,7 @@ void IDListLayer::loadLevelsFailed(const char*) {
 }
 
 void IDListLayer::onClose(CCObject*) {
-    auto scene = CCScene::create();
-    scene->addChild(LevelSearchLayer::create(GameManager::sharedState()->m_unkSize4_17));
-    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, scene));
+    CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, LevelSearchLayer::scene(GameManager::sharedState()->m_unkSize4_17)));
 }
 
 void IDListLayer::onSearch(CCObject*) {
