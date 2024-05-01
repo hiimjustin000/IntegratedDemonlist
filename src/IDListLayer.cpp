@@ -219,8 +219,8 @@ void IDListLayer::addSearchBar() {
     searchBarBg->setContentSize({ 620.0f, 40.0f });
     searchBarBg->setColor({ 126, 59, 7 });
     searchBarBg->setScale(0.5f);
-    m_searchBarView->addChild(searchBarBg);
     m_searchBarView->addChild(searchBarMenu);
+    m_searchBarView->addChild(searchBarBg);
 
     m_list->addChild(m_searchBarView);
 }
