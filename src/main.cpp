@@ -1,10 +1,6 @@
 #include "IDListLayer.hpp"
 
-#include <Geode/modify/LevelSearchLayer.hpp>
-#include <Geode/modify/LevelCell.hpp>
 #include <Geode/modify/MenuLayer.hpp>
-#include <Geode/modify/CCKeyboardDispatcher.hpp>
-
 class $modify(IDMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
@@ -16,6 +12,7 @@ class $modify(IDMenuLayer, MenuLayer) {
     }
 };
 
+#include <Geode/modify/LevelSearchLayer.hpp>
 class $modify(IDLevelSearchLayer, LevelSearchLayer) {
     bool init(int searchType) {
         if (!LevelSearchLayer::init(searchType)) return false;
@@ -24,7 +21,7 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
         demonlistButtonSprite->setScale(0.8f);
         auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelSearchLayer::onDemonList));
         demonlistButton->setID("demonlist-button"_spr);
-        auto menu = static_cast<CCMenu*>(getChildByID("other-filter-menu"));
+        auto menu = getChildByID("other-filter-menu");
         menu->addChild(demonlistButton);
         menu->updateLayout();
 
@@ -40,6 +37,7 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
 
 // Thanks Cvolton for the code
 // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelCell.cpp#L113
+#include <Geode/modify/LevelCell.hpp>
 class $modify(IDLevelCell, LevelCell) {
     void loadCustomLevelCell() {
         LevelCell::loadCustomLevelCell();
@@ -68,6 +66,7 @@ class $modify(IDLevelCell, LevelCell) {
     }
 };
 
+#include <Geode/modify/CCKeyboardDispatcher.hpp>
 class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
     bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
         auto layer = CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"_spr);

@@ -1,21 +1,15 @@
-#include "IDListLayer.hpp"
 #include <random>
 #include <Geode/utils/string.hpp>
 #include <Geode/utils/web.hpp>
+#include "IDListLayer.hpp"
 
 template<typename T>
 std::vector<T> pluck(matjson::Value const& json, std::string const& key) {
     std::vector<T> ret;
     for (auto const& val : json.as_array()) {
-        if (!val.contains("legacy") || !val["legacy"].as_bool()) ret.push_back(val[key].as<T>());
+        if ((!val.contains("legacy") || !val["legacy"].as_bool()) && !val["two_player"].as_bool()) ret.push_back(val[key].as<T>());
     }
     return ret;
-}
-
-std::string toLowerCase(std::string str) {
-    auto strCopy = std::string(str);
-    std::transform(strCopy.begin(), strCopy.end(), strCopy.begin(), ::tolower);
-    return strCopy;
 }
 
 int paddedSize(int size, int pad) {
@@ -188,7 +182,10 @@ bool IDListLayer::init() {
     addChild(m_leftSearchMenu);
 
     m_loadingCircle = LoadingCircle::create();
-    addChild(m_loadingCircle);
+    m_loadingCircle->setParentLayer(this);
+    m_loadingCircle->retain();
+    m_loadingCircle->show();
+    m_loadingCircle->setVisible(false);
 
     m_searchBarView->setVisible(false);
     m_searchBar->setVisible(false);
@@ -228,7 +225,6 @@ void IDListLayer::addSearchBar() {
 void IDListLayer::populateList(std::string query) {
     m_pageLabel->setString(std::to_string(m_page + 1).c_str());
     m_loadingCircle->setVisible(true);
-    m_loadingCircle->show();
     m_list->m_listView->setVisible(false);
     m_searchBarView->setVisible(false);
     m_searchBar->setVisible(false);
@@ -245,29 +241,37 @@ void IDListLayer::populateList(std::string query) {
     m_leftSearchMenu->setEnabled(false);
     m_rightSearchMenu->setVisible(false);
     m_rightSearchMenu->setEnabled(false);
+    m_fullSearchResults.clear();
     if (query.compare(m_query) != 0 && !query.empty()) {
-        auto queryLowercase = toLowerCase(query);
-        m_fullSearchResults = {};
+        auto queryLowercase = string::toLower(query);
         for (int i = 0; i < AREDL.size(); i++) {
-            if (toLowerCase(AREDL_NAMES[i]).rfind(queryLowercase, 0) != std::string::npos) m_fullSearchResults.push_back(AREDL[i]);
+            if (string::toLower(AREDL_NAMES[i]).rfind(queryLowercase, 0) != std::string::npos) m_fullSearchResults.push_back(std::to_string(AREDL[i]));
         }
     }
     m_query = query;
-    if (query.empty()) m_fullSearchResults = AREDL;
-
-    auto glm = GameLevelManager::sharedState();
-    glm->m_levelManagerDelegate = this;
-    auto searchResults = std::vector<int>(m_fullSearchResults.begin() + m_page * 10,
-        m_fullSearchResults.begin() + std::min(static_cast<int>(m_fullSearchResults.size()), (m_page + 1) * 10));
-    auto searchResultsStr = std::vector<std::string>(searchResults.size());
-    std::transform(searchResults.begin(), searchResults.end(), searchResultsStr.begin(), [](int i) { return std::to_string(i); });
-    auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, string::join(searchResultsStr, ","));
-    auto storedLevels = glm->getStoredOnlineLevels(searchObject->getKey());
-    if (storedLevels) {
-        loadLevelsFinished(storedLevels, "");
-        setupPageInfo("", "");
+    if (query.empty()) {
+        for (int i = 0; i < AREDL.size(); i++) {
+            m_fullSearchResults.push_back(std::to_string(AREDL[i]));
+        }
     }
-    else glm->getOnlineLevels(searchObject);
+
+    if (m_fullSearchResults.empty()) {
+        loadLevelsFinished(CCArray::create(), "");
+        m_countLabel->setString("");
+    }
+    else {
+        auto glm = GameLevelManager::sharedState();
+        glm->m_levelManagerDelegate = this;
+        auto searchResults = std::vector<std::string>(m_fullSearchResults.begin() + m_page * 10,
+            m_fullSearchResults.begin() + std::min(static_cast<int>(m_fullSearchResults.size()), (m_page + 1) * 10));
+        auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, string::join(searchResults, ","));
+        auto storedLevels = glm->getStoredOnlineLevels(searchObject->getKey());
+        if (storedLevels) {
+            loadLevelsFinished(storedLevels, "");
+            setupPageInfo("", "");
+        }
+        else glm->getOnlineLevels(searchObject);
+    }
 }
 
 void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
@@ -275,12 +279,11 @@ void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     if (m_list->getParent() == this) removeChild(m_list);
     m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
     m_list->setZOrder(2);
-    m_list->setPosition(winSize / 2 - m_list->getScaledContentSize() / 2);
+    m_list->setPosition(winSize / 2 - m_list->getContentSize() / 2);
     addChild(m_list);
     addSearchBar();
     m_searchBar->setVisible(true);
     m_countLabel->setVisible(true);
-    m_loadingCircle->fadeAndRemove();
     m_loadingCircle->setVisible(false);
     if (m_fullSearchResults.size() > 10) {
         auto maxPage = paddedSize(m_fullSearchResults.size(), 10) / 10 - 1;
@@ -301,8 +304,8 @@ void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
 
 void IDListLayer::loadLevelsFailed(const char*) {
     m_searchBar->setVisible(true);
+    m_searchBarView->setVisible(true);
     m_countLabel->setVisible(true);
-    m_loadingCircle->fadeAndRemove();
     m_loadingCircle->setVisible(false);
     FLAlertLayer::create("Load Failed", "Failed to load levels. Please try again later.", "OK")->show();
 }
@@ -318,10 +321,11 @@ void IDListLayer::onClose(CCObject*) {
 }
 
 void IDListLayer::onSearch(CCObject*) {
-    if (m_query.compare(m_searchBar->getString()) != 0) {
-        loadAREDL(false, [this]() {
+    auto searchString = m_searchBar->getString();
+    if (m_query.compare(searchString) != 0) {
+        loadAREDL(false, [this, searchString]() {
             m_page = 0;
-            populateList(m_searchBar->getString());
+            populateList(searchString);
         });
     }
 }
@@ -401,4 +405,8 @@ void IDListLayer::keyBackClicked() {
 void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
     m_page = std::min(std::max(page - 1, 0), paddedSize(m_fullSearchResults.size(), 10) / 10 - 1);
     populateList(m_query);
+}
+
+IDListLayer::~IDListLayer() {
+    m_loadingCircle->release();
 }

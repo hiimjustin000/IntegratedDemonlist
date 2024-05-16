@@ -26,6 +26,8 @@ public:
     void onLast(CCObject*);
     void keyDown(enumKeyCodes) override;
     void keyBackClicked() override;
+
+    ~IDListLayer();
 protected:
     GJListLayer* m_list;
     CCMenu* m_backMenu;
@@ -45,7 +47,7 @@ protected:
     CCMenuItemSpriteExtra* m_lastButton;
     int m_page = 0;
     std::string m_query = "";
-    std::vector<int> m_fullSearchResults;
+    std::vector<std::string> m_fullSearchResults;
 
     bool init() override;
     void addSearchBar();
