@@ -1,4 +1,8 @@
 # Integrated Demonlist Changelog
+## v1.4.8 (2024-06-07)
+- Tweaked the UI of the demonlist page
+- Ported to Geometry Dash v2.206
+
 ## v1.4.7 (2024-05-15)
 - Fixed a bug where two-player demons would appear twice in the demonlist
 - Fixed a few bugs with the demonlist search    

@@ -1,11 +1,11 @@
 {
-    "geode": "2.0.0-beta.26",
+    "geode": "3.0.0-alpha.1",
     "gd": {
-        "android": "2.205",
-        "win": "2.204",
-        "mac": "2.200"
+        "android": "2.206",
+        "win": "2.206",
+        "mac": "2.206"
     },
-    "version": "v1.4.7",
+    "version": "v1.4.8",
     "id": "hiimjustin000.integrated_demonlist",
     "name": "Integrated Demonlist",
     "developer": "hiimjustin000",
@@ -33,7 +33,7 @@
     "dependencies": [
         {
             "id": "geode.node-ids",
-            "version": ">=v1.9.1",
+            "version": ">=v1.12.0-beta.1",
             "importance": "required"
         }
     ]
