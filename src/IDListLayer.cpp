@@ -27,29 +27,25 @@ std::vector<T> IDListLayer::pluck(matjson::Array const& arr, std::string const& 
     return ret;
 }
 
-void IDListLayer::loadAREDL(bool fromMenuLayer, utils::MiniFunction<void()> callback) {
-    auto req = web::WebRequest();
-    RUNNING_REQUESTS.emplace(
-        "@loadAREDL",
-        req.get("https://api.aredl.net/api/aredl/levels").map(
-            [fromMenuLayer, callback](web::WebResponse* res) {
-                if (res->ok()) {
-                    auto json = res->json().value().as_array();
-                    AREDL = pluck<int>(json, "level_id");
-                    AREDL_NAMES = pluck<std::string>(json, "name");
-                    AREDL_POSITIONS = pluck<int>(json, "position");
-                    callback();
-                }
-                else {
-                    if (fromMenuLayer) Notification::create("Failed to load AREDL", NotificationIcon::Error)->show();
-                    else FLAlertLayer::create("Load Failed", "Failed to load AREDL. Please try again later.", "OK")->show();
-                }
-
-                RUNNING_REQUESTS.erase("@loadAREDL");
-                return *res;
+void IDListLayer::loadAREDL(EventListener<web::WebTask>&& listenerRef, bool fromMenuLayer, utils::MiniFunction<void()> callback) {
+    auto&& listener = std::move(listenerRef);
+    listener.bind([fromMenuLayer, callback](auto e) {
+        if (auto res = e->getValue()) {
+            if (res->ok()) {
+                auto json = res->json().value().as_array();
+                AREDL = pluck<int>(json, "level_id");
+                AREDL_NAMES = pluck<std::string>(json, "name");
+                AREDL_POSITIONS = pluck<int>(json, "position");
+                callback();
             }
-        )
-    );
+            else {
+                if (fromMenuLayer) Notification::create("Failed to load AREDL", NotificationIcon::Error)->show();
+                else FLAlertLayer::create("Load Failed", "Failed to load AREDL. Please try again later.", "OK")->show();
+            }
+        }
+    });
+
+    listener.setFilter(web::WebRequest().get("https://api.aredl.net/api/aredl/levels"));
 }
 
 float IDListLayer::createGap(CCNode* node1, CCNode* node2, float gap) {
@@ -134,7 +130,7 @@ bool IDListLayer::init() {
 
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
     auto& refreshBtnSize = refreshBtnSpr->getContentSize();
-    m_refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto) { loadAREDL(false, [this]() { populateList(m_query); }); });
+    m_refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto) { loadAREDL(std::move(m_listener), false, [this]() { populateList(m_query); }); });
     m_refreshButton->setPosition(winSize.width - refreshBtnSize.width / 2 - 4.0f, refreshBtnSize.height / 2 + 4.0f);
     menu->addChild(m_refreshButton, 2);
 
@@ -330,7 +326,7 @@ void IDListLayer::setupPageInfo(gd::string, const char*) {
 void IDListLayer::search() {
     auto searchString = m_searchBar->getString();
     if (m_query != searchString) {
-        loadAREDL(false, [this, searchString]() {
+        loadAREDL(std::move(m_listener), false, [this, searchString]() {
             m_page = 0;
             populateList(searchString);
         });

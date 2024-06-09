@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.4.9-beta.1 (2024-06-08)
+- Fixed a few things
+
 ## v1.4.8 (2024-06-07)
 - Tweaked the UI of the demonlist page
 - Ported to Geometry Dash v2.206

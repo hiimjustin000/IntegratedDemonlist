@@ -9,13 +9,12 @@ public:
     inline static std::vector<std::string> AREDL_NAMES = {};
     inline static std::vector<int> AREDL_POSITIONS = {};
     inline static bool AREDL_TRIED_LOADING = false;
-    inline static std::unordered_map<std::string, web::WebTask> RUNNING_REQUESTS = {};
 
     static IDListLayer* create();
     static CCScene* scene();
     template<class T>
     static std::vector<T> pluck(matjson::Array const&, std::string const&);
-    static void loadAREDL(bool, MiniFunction<void()> callback = []() {});
+    static void loadAREDL(EventListener<web::WebTask>&&, bool, MiniFunction<void()> callback = []() {});
     static float createGap(CCNode*, CCNode*, float);
 
     void search();
@@ -44,6 +43,7 @@ protected:
     int m_page = 0;
     std::string m_query = "";
     std::vector<std::string> m_fullSearchResults;
+    EventListener<web::WebTask> m_listener;
 
     bool init() override;
     void addSearchBar();

@@ -2,12 +2,16 @@
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(IDMenuLayer, MenuLayer) {
+    struct Fields {
+        EventListener<web::WebTask> m_listener;
+    };
+
     bool init() {
         if (!MenuLayer::init()) return false;
 
         if (IDListLayer::AREDL_TRIED_LOADING) return true;
         IDListLayer::AREDL_TRIED_LOADING = true;
-        IDListLayer::loadAREDL(true);
+        IDListLayer::loadAREDL(std::move(m_fields->m_listener), true);
 
         return true;
     }
