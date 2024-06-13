@@ -43,9 +43,12 @@ class $modify(IDLevelCell, LevelCell) {
     void onClick(CCObject* sender) {
         LevelCell::onClick(sender);
 
+        if (!m_tableView) return;
+
         auto layer = m_tableView->getParent()->getParent()->getParent();
         if (layer->getID() == "IDListLayer") static_cast<IDListLayer*>(layer)->deselectKeyboard();
     }
+
     void loadCustomLevelCell() {
         LevelCell::loadCustomLevelCell();
 

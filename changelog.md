@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.4.9-beta.3 (2024-06-12)
+- Fixed a bug where the game would crash when viewing daily and weekly levels
+
 ## v1.4.9-beta.2 (2024-06-12)
 - Fixed a bug where the search box would stay selected after selecting a demon
 
