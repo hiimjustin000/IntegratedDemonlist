@@ -19,6 +19,7 @@ public:
 
     void search();
     void page(int);
+    void deselectKeyboard();
     void keyDown(enumKeyCodes) override;
     void keyBackClicked() override;
 

@@ -55,7 +55,7 @@ float IDListLayer::createGap(CCNode* node1, CCNode* node2, float gap) {
 bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
 
-    setID("IDListLayer"_spr);
+    setID("IDListLayer");
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
     auto bg = CCSprite::create("GJ_gradientBG.png");
@@ -253,7 +253,7 @@ void IDListLayer::populateList(std::string query) {
     if (query != m_query && !query.empty()) {
         auto queryLowercase = string::toLower(query);
         for (int i = 0; i < AREDL.size(); i++) {
-            if (string::toLower(AREDL_NAMES[i]).rfind(queryLowercase, 0) != std::string::npos) m_fullSearchResults.push_back(std::to_string(AREDL[i]));
+            if (string::startsWith(string::toLower(AREDL_NAMES[i]), queryLowercase)) m_fullSearchResults.push_back(std::to_string(AREDL[i]));
         }
     }
     m_query = query;
@@ -339,6 +339,10 @@ void IDListLayer::page(int page) {
     populateList(m_query);
 }
 
+void IDListLayer::deselectKeyboard() {
+    m_searchBar->onClickTrackNode(false);
+}
+
 void IDListLayer::keyDown(enumKeyCodes key) {
     switch (key)
     {
@@ -370,5 +374,5 @@ void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
 }
 
 IDListLayer::~IDListLayer() {
-    m_loadingCircle->release();
+    CC_SAFE_RELEASE(m_loadingCircle);
 }
