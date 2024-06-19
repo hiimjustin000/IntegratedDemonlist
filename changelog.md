@@ -1,4 +1,8 @@
 # Integrated Demonlist Changelog
+## v1.5.0 (2024-06-19)
+- Added Pemonlist support
+- Fixed a bug where the list would not load if the main menu was exited too quickly
+
 ## v1.4.9 (2024-06-14)
 - Finalized the release of v1.4.9
 

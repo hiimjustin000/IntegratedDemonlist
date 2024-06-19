@@ -5,11 +5,11 @@
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.4.9",
+    "version": "v1.5.0",
     "id": "hiimjustin000.integrated_demonlist",
     "name": "Integrated Demonlist",
     "developer": "hiimjustin000",
-    "description": "A mod that integrates a list of the top extreme demons, according to aredl.net, into Geometry Dash.",
+    "description": "A mod that integrates aredl.net and pemonlist.com into Geometry Dash.",
     "repository": "https://github.com/hiimjustin000/IntegratedDemonlist",
     "resources": {
         "sprites": [

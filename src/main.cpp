@@ -9,9 +9,10 @@ class $modify(IDMenuLayer, MenuLayer) {
     bool init() {
         if (!MenuLayer::init()) return false;
 
-        if (IDListLayer::AREDL_TRIED_LOADING) return true;
-        IDListLayer::AREDL_TRIED_LOADING = true;
-        IDListLayer::loadAREDL(std::move(m_fields->m_listener), true);
+        if (IntegratedDemonlist::TRIED_LOADING) return true;
+        IntegratedDemonlist::TRIED_LOADING = true;
+        IntegratedDemonlist::loadAREDL();
+        IntegratedDemonlist::loadPemonlist();
 
         return true;
     }
@@ -53,11 +54,19 @@ class $modify(IDLevelCell, LevelCell) {
         LevelCell::loadCustomLevelCell();
 
         if (Mod::get()->getSettingValue<bool>("enable-rank")) {
-            auto begin = IDListLayer::AREDL.begin();
-            auto end = IDListLayer::AREDL.end();
-            auto found = std::find(begin, end, m_level->m_levelID.value());
-            if (found != end) {
-                auto rankTextNode = CCLabelBMFont::create(fmt::format("#{} on AREDL", IDListLayer::AREDL_POSITIONS[found - begin]).c_str(), "chatFont.fnt");
+            auto rankText = std::string();
+            auto found = std::find_if(IntegratedDemonlist::AREDL.begin(), IntegratedDemonlist::AREDL.end(), [this](auto const& demon) {
+                return demon.id == m_level->m_levelID;
+            });
+            if (found != IntegratedDemonlist::AREDL.end()) rankText = fmt::format("#{} AREDL", found->position);
+            else {
+                found = std::find_if(IntegratedDemonlist::PEMONLIST.begin(), IntegratedDemonlist::PEMONLIST.end(), [this](auto const& demon) {
+                    return demon.id == m_level->m_levelID;
+                });
+                if (found != IntegratedDemonlist::PEMONLIST.end()) rankText = fmt::format("#{} Pemonlist", found->position);
+            }
+            if (!rankText.empty()) {
+                auto rankTextNode = CCLabelBMFont::create(rankText.c_str(), "chatFont.fnt");
                 rankTextNode->setPosition(346.0f, m_level->m_dailyID.value() > 0 ? 6.0f : m_compactView ? 9.0f : 12.0f);
                 rankTextNode->setAnchorPoint({ 1.0f, 1.0f });
                 rankTextNode->setScale(m_compactView ? 0.45f : 0.6f);

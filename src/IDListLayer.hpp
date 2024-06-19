@@ -1,21 +1,11 @@
-#include <Geode/Geode.hpp>
-#include <Geode/utils/web.hpp>
-
-using namespace geode::prelude;
+#include "IntegratedDemonlist.hpp"
 
 class IDListLayer : public CCLayer, SetIDPopupDelegate, LevelManagerDelegate {
+private:
+    inline static bool PEMONLIST = false;
 public:
-    inline static std::vector<int> AREDL = {};
-    inline static std::vector<std::string> AREDL_NAMES = {};
-    inline static std::vector<int> AREDL_POSITIONS = {};
-    inline static bool AREDL_TRIED_LOADING = false;
-
     static IDListLayer* create();
     static CCScene* scene();
-    template<class T>
-    static std::vector<T> pluck(matjson::Array const&, std::string const&);
-    static void loadAREDL(EventListener<web::WebTask>&&, bool, MiniFunction<void()> callback = []() {});
-    static float createGap(CCNode*, CCNode*, float);
 
     void search();
     void page(int);
@@ -25,6 +15,7 @@ public:
 
     ~IDListLayer();
 protected:
+    EventListener<web::WebTask> m_listener;
     GJListLayer* m_list;
     CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
@@ -35,8 +26,6 @@ protected:
     CCMenuItemSpriteExtra* m_backButton;
     CCMenuItemSpriteExtra* m_leftButton;
     CCMenuItemSpriteExtra* m_rightButton;
-    CCMenuItemSpriteExtra* m_infoButton;
-    CCMenuItemSpriteExtra* m_refreshButton;
     CCMenuItemSpriteExtra* m_pageButton;
     CCMenuItemSpriteExtra* m_randomButton;
     CCMenuItemSpriteExtra* m_firstButton;
@@ -44,7 +33,6 @@ protected:
     int m_page = 0;
     std::string m_query = "";
     std::vector<std::string> m_fullSearchResults;
-    EventListener<web::WebTask> m_listener;
 
     bool init() override;
     void addSearchBar();

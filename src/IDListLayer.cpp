@@ -18,40 +18,6 @@ CCScene* IDListLayer::scene() {
     return ret;
 }
 
-template<typename T>
-std::vector<T> IDListLayer::pluck(matjson::Array const& arr, std::string const& key) {
-    std::vector<T> ret = {};
-    for (auto const& val : arr) {
-        if ((!val.contains("legacy") || !val["legacy"].as_bool()) && !val["two_player"].as_bool()) ret.push_back(val[key].as<T>());
-    }
-    return ret;
-}
-
-void IDListLayer::loadAREDL(EventListener<web::WebTask>&& listenerRef, bool fromMenuLayer, utils::MiniFunction<void()> callback) {
-    auto&& listener = std::move(listenerRef);
-    listener.bind([fromMenuLayer, callback](auto e) {
-        if (auto res = e->getValue()) {
-            if (res->ok()) {
-                auto json = res->json().value().as_array();
-                AREDL = pluck<int>(json, "level_id");
-                AREDL_NAMES = pluck<std::string>(json, "name");
-                AREDL_POSITIONS = pluck<int>(json, "position");
-                callback();
-            }
-            else {
-                if (fromMenuLayer) Notification::create("Failed to load AREDL", NotificationIcon::Error)->show();
-                else FLAlertLayer::create("Load Failed", "Failed to load AREDL. Please try again later.", "OK")->show();
-            }
-        }
-    });
-
-    listener.setFilter(web::WebRequest().get("https://api.aredl.net/api/aredl/levels"));
-}
-
-float IDListLayer::createGap(CCNode* node1, CCNode* node2, float gap) {
-    return node1->getPositionY() - node1->getContentSize().height / 2 - node2->getContentSize().height / 2 - gap;
-}
-
 bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
 
@@ -84,7 +50,8 @@ bool IDListLayer::init() {
     m_countLabel->setPosition(winSize.width - 7.0f, winSize.height - 3.0f);
     addChild(m_countLabel);
 
-    m_list = GJListLayer::create(CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
+    m_list = GJListLayer::create(CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, 358.0f),
+        PEMONLIST ? "Pemonlist" : "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getContentSize() / 2);
     addChild(m_list);
@@ -120,19 +87,34 @@ bool IDListLayer::init() {
     m_rightButton->setPosition(winSize.width - 24.0f, winSize.height / 2);
     menu->addChild(m_rightButton);
 
-    m_infoButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_infoIcon_001.png", 1.0f, [](auto) {
-        std::string line1 = "The <cg>All Rated Extreme Demons List</c> (AREDL) is an unofficial ranking of all rated <cr>Extreme Demons</c> in Geometry Dash.\n";
-        std::string line2 = "It is managed by <cy>iiLogan</c>, <cy>SEDTHEPRODIGY</c>, <cy>Megu</c>, and <cy>Minebox260</c>.";
-        FLAlertLayer::create("AREDL", line1 + line2, "OK")->show();
+    auto infoButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_infoIcon_001.png", 1.0f, [](auto) {
+        FLAlertLayer::create(PEMONLIST ? "Pemonlist" : "AREDL", PEMONLIST ?
+            "The <cg>Pemonlist</c> is an unofficial ranking of all rated <cj>platformer mode</c> <cr>Demons</c> in Geometry Dash.\n"
+            "It is managed by <cy>camila314</c>, <cy>Extatica</c>, and <cy>mariokirby1703</c>." :
+            "The <cg>All Rated Extreme Demons List</c> (AREDL) is an unofficial ranking of all rated <cj>classic mode</c> <cr>Extreme Demons</c> in Geometry Dash.\n"
+            "It is managed by <cy>iiLogan</c>, <cy>SEDTHEPRODIGY</c>, <cy>Megu</c>, and <cy>Minebox260</c>.",
+            "OK")->show();
     });
-    m_infoButton->setPosition(30.0f, 30.0f);
-    menu->addChild(m_infoButton, 2);
+    infoButton->setPosition(30.0f, 30.0f);
+    menu->addChild(infoButton, 2);
 
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
     auto& refreshBtnSize = refreshBtnSpr->getContentSize();
-    m_refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto) { loadAREDL(std::move(m_listener), false, [this]() { populateList(m_query); }); });
-    m_refreshButton->setPosition(winSize.width - refreshBtnSize.width / 2 - 4.0f, refreshBtnSize.height / 2 + 4.0f);
-    menu->addChild(m_refreshButton, 2);
+    auto refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto) {
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() { populateList(m_query); });
+        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { populateList(m_query); });
+    });
+    refreshButton->setPosition(winSize.width - refreshBtnSize.width / 2 - 4.0f, refreshBtnSize.height / 2 + 4.0f);
+    menu->addChild(refreshButton, 2);
+
+    auto listToggler = CCMenuItemExt::createTogglerWithFrameName("GJ_moonsIcon_001.png", "GJ_starsIcon_001.png", 1.1f, [this](auto) {
+        PEMONLIST = !PEMONLIST;
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() { page(0); });
+        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { page(0); });
+    });
+    listToggler->toggle(PEMONLIST);
+    listToggler->setPosition(30.0f, 60.0f);
+    menu->addChild(listToggler, 2);
 
     auto pageBtnSpr = CCSprite::create("GJ_button_02.png");
     pageBtnSpr->setScale(0.7f);
@@ -157,7 +139,7 @@ bool IDListLayer::init() {
         std::uniform_int_distribution<int> distribute(0, getMaxPage());
         page(distribute(generator));
     });
-    m_randomButton->setPositionY(createGap(m_pageButton, m_randomButton, 5.0f));
+    m_randomButton->setPositionY(m_pageButton->getPositionY() - m_pageButton->getContentSize().height / 2 - m_randomButton->getContentSize().height / 2 - 5.0f);
     menu->addChild(m_randomButton);
     // oh boy
     // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelBrowserLayer.cpp#L118
@@ -173,7 +155,7 @@ bool IDListLayer::init() {
     arrowParent->addChild(secondArrow);
     arrowParent->setScale(0.4f);
     m_lastButton = CCMenuItemExt::createSpriteExtra(arrowParent, [this](auto) { page(getMaxPage()); });
-    m_lastButton->setPositionY(createGap(m_randomButton, m_lastButton, 2.0f));
+    m_lastButton->setPositionY(m_randomButton->getPositionY() - m_randomButton->getContentSize().height / 2 - m_lastButton->getContentSize().height / 2 - 2.0f);
     menu->addChild(m_lastButton);
     auto x = winSize.width - 3.0f - m_randomButton->getContentSize().width / 2;
     m_pageButton->setPositionX(x);
@@ -209,7 +191,14 @@ bool IDListLayer::init() {
     m_randomButton->setVisible(false);
 
     setKeyboardEnabled(true);
-    if (!AREDL.empty()) populateList("");
+    if (PEMONLIST) {
+        if (!IntegratedDemonlist::PEMONLIST.empty()) populateList("");
+        else IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() { populateList(""); });
+    }
+    else {
+        if (!IntegratedDemonlist::AREDL.empty()) populateList("");
+        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { populateList(""); });
+    }
 
     return true;
 }
@@ -250,16 +239,18 @@ void IDListLayer::populateList(std::string query) {
     m_pageButton->setVisible(false);
     m_randomButton->setVisible(false);
     m_fullSearchResults.clear();
+
+    auto& list = PEMONLIST ? IntegratedDemonlist::PEMONLIST : IntegratedDemonlist::AREDL;
     if (query != m_query && !query.empty()) {
         auto queryLowercase = string::toLower(query);
-        for (int i = 0; i < AREDL.size(); i++) {
-            if (string::startsWith(string::toLower(AREDL_NAMES[i]), queryLowercase)) m_fullSearchResults.push_back(std::to_string(AREDL[i]));
+        for (auto const& level : list) {
+            if (string::startsWith(string::toLower(level.name), queryLowercase)) m_fullSearchResults.push_back(std::to_string(level.id));
         }
     }
     m_query = query;
     if (query.empty()) {
-        for (int i = 0; i < AREDL.size(); i++) {
-            m_fullSearchResults.push_back(std::to_string(AREDL[i]));
+        for (auto const& level : list) {
+            m_fullSearchResults.push_back(std::to_string(level.id));
         }
     }
 
@@ -290,7 +281,8 @@ int IDListLayer::getMaxPage() {
 void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     if (m_list->getParent() == this) removeChild(m_list);
-    m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 358.0f), "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
+    m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 358.0f),
+        PEMONLIST ? "Pemonlist" : "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 358.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getContentSize() / 2);
     addChild(m_list);
@@ -326,7 +318,11 @@ void IDListLayer::setupPageInfo(gd::string, const char*) {
 void IDListLayer::search() {
     auto searchString = m_searchBar->getString();
     if (m_query != searchString) {
-        loadAREDL(std::move(m_listener), false, [this, searchString]() {
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this, searchString]() {
+            m_page = 0;
+            populateList(searchString);
+        });
+        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this, searchString]() {
             m_page = 0;
             populateList(searchString);
         });
