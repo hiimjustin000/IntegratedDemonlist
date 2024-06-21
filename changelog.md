@@ -1,4 +1,9 @@
 # Integrated Demonlist Changelog
+## v1.5.1 (2024-06-20)
+- Tweaked the UI of the demonlist page
+- Fixed a bug where the refresh button would empty the list
+- Fixed a bug where legacy demons would appear in the demonlist and two-player demons would appear twice
+
 ## v1.5.0 (2024-06-19)
 - Added Pemonlist support
 - Fixed a bug where the list would not load if the main menu was exited too quickly

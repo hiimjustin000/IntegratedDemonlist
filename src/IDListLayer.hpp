@@ -3,13 +3,18 @@
 class IDListLayer : public CCLayer, SetIDPopupDelegate, LevelManagerDelegate {
 private:
     inline static bool PEMONLIST = false;
+    inline static const char* AREDL_INFO =
+        "The <cg>All Rated Extreme Demons List</c> (<cg>AREDL</c>) is an <cp>unofficial ranking</c> of all rated <cj>classic mode</c> <cr>extreme demons</c> in Geometry Dash.\n"
+        "It is managed by <cy>iiLogan</c>, <cy>SEDTHEPRODIGY</c>, <cy>Megu</c>, and <cy>Minebox260</c>.";
+    inline static const char* PEMONLIST_INFO =
+        "The <cg>Pemonlist</c> is an <cp>unofficial ranking</c> of all rated <cj>platformer mode</c> <cr>demons</c> in Geometry Dash.\n"
+        "It is managed by <cy>camila314</c>, <cy>Extatica</c>, and <cy>mariokirby1703</c>.";
 public:
     static IDListLayer* create();
     static CCScene* scene();
 
     void search();
     void page(int);
-    void deselectKeyboard();
     void keyDown(enumKeyCodes) override;
     void keyBackClicked() override;
 
@@ -19,10 +24,11 @@ protected:
     GJListLayer* m_list;
     CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
-    CCLayerColor* m_searchBarView;
-    CCTextInputNode* m_searchBar;
+    CCMenu* m_searchBarMenu;
+    TextInput* m_searchBar;
     CCLabelBMFont* m_countLabel;
     CCLabelBMFont* m_pageLabel;
+    InfoAlertButton* m_infoButton;
     CCMenuItemSpriteExtra* m_backButton;
     CCMenuItemSpriteExtra* m_leftButton;
     CCMenuItemSpriteExtra* m_rightButton;
@@ -32,6 +38,7 @@ protected:
     CCMenuItemSpriteExtra* m_lastButton;
     int m_page = 0;
     std::string m_query = "";
+    std::string m_searchBarText = "";
     std::vector<std::string> m_fullSearchResults;
 
     bool init() override;

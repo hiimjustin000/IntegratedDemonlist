@@ -4,7 +4,7 @@ void IntegratedDemonlist::initializeDemons(web::WebResponse* res, bool pemonlist
     auto& list = pemonlist ? PEMONLIST : AREDL;
     list.clear();
     for (auto const& level : res->json().value().as_array()) {
-        list.push_back({
+        if (pemonlist || ((!level.contains("legacy") || !level["legacy"].as_bool()) && !level["two_player"].as_bool())) list.push_back({
             level["level_id"].as_int(),
             level["name"].as_string(),
             level[pemonlist ? "placement" : "position"].as_int()

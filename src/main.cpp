@@ -41,15 +41,6 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
 // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelCell.cpp#L113
 #include <Geode/modify/LevelCell.hpp>
 class $modify(IDLevelCell, LevelCell) {
-    void onClick(CCObject* sender) {
-        LevelCell::onClick(sender);
-
-        if (!m_tableView) return;
-
-        auto layer = m_tableView->getParent()->getParent()->getParent();
-        if (layer->getID() == "IDListLayer") static_cast<IDListLayer*>(layer)->deselectKeyboard();
-    }
-
     void loadCustomLevelCell() {
         LevelCell::loadCustomLevelCell();
 

@@ -58,17 +58,6 @@ bool IDListLayer::init() {
 
     addSearchBar();
 
-    m_searchBar = CCTextInputNode::create(340.0f, 30.0f, "Search Demons...", "bigFont.fnt");
-    m_searchBar->setAllowedChars(" !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~");
-    m_searchBar->setLabelPlaceholderColor({ 150, 150, 150 });
-    m_searchBar->setLabelPlaceholderScale(0.4f);
-    m_searchBar->setMaxLabelScale(0.4f);
-    m_searchBar->m_textField->setAnchorPoint({ 0.0f, 0.5f });
-    m_searchBar->m_placeholderLabel->setAnchorPoint({ 0.0f, 0.5f });
-    m_searchBar->setPosition(winSize.width / 2 - 160.f, winSize.height / 2 + 95.f);
-    m_searchBar->setZOrder(60);
-    addChild(m_searchBar);
-
     auto menu = CCMenu::create();
     menu->setPosition(0.0f, 0.0f);
     addChild(menu);
@@ -87,16 +76,9 @@ bool IDListLayer::init() {
     m_rightButton->setPosition(winSize.width - 24.0f, winSize.height / 2);
     menu->addChild(m_rightButton);
 
-    auto infoButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_infoIcon_001.png", 1.0f, [](auto) {
-        FLAlertLayer::create(PEMONLIST ? "Pemonlist" : "AREDL", PEMONLIST ?
-            "The <cg>Pemonlist</c> is an unofficial ranking of all rated <cj>platformer mode</c> <cr>Demons</c> in Geometry Dash.\n"
-            "It is managed by <cy>camila314</c>, <cy>Extatica</c>, and <cy>mariokirby1703</c>." :
-            "The <cg>All Rated Extreme Demons List</c> (AREDL) is an unofficial ranking of all rated <cj>classic mode</c> <cr>Extreme Demons</c> in Geometry Dash.\n"
-            "It is managed by <cy>iiLogan</c>, <cy>SEDTHEPRODIGY</c>, <cy>Megu</c>, and <cy>Minebox260</c>.",
-            "OK")->show();
-    });
-    infoButton->setPosition(30.0f, 30.0f);
-    menu->addChild(infoButton, 2);
+    m_infoButton = InfoAlertButton::create(PEMONLIST ? "Pemonlist" : "All Rated Extreme Demons List", PEMONLIST ? PEMONLIST_INFO : AREDL_INFO, 1.0f);
+    m_infoButton->setPosition(30.0f, 30.0f);
+    menu->addChild(m_infoButton, 2);
 
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
     auto& refreshBtnSize = refreshBtnSpr->getContentSize();
@@ -109,8 +91,16 @@ bool IDListLayer::init() {
 
     auto listToggler = CCMenuItemExt::createTogglerWithFrameName("GJ_moonsIcon_001.png", "GJ_starsIcon_001.png", 1.1f, [this](auto) {
         PEMONLIST = !PEMONLIST;
-        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() { page(0); });
-        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { page(0); });
+        if (PEMONLIST) {
+            IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() { page(0); });
+            m_infoButton->m_title = "Pemonlist";
+            m_infoButton->m_description = PEMONLIST_INFO;
+        }
+        else {
+            IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { page(0); });
+            m_infoButton->m_title = "All Rated Extreme Demons List";
+            m_infoButton->m_description = AREDL_INFO;
+        }
     });
     listToggler->toggle(PEMONLIST);
     listToggler->setPosition(30.0f, 60.0f);
@@ -141,38 +131,29 @@ bool IDListLayer::init() {
     });
     m_randomButton->setPositionY(m_pageButton->getPositionY() - m_pageButton->getContentSize().height / 2 - m_randomButton->getContentSize().height / 2 - 5.0f);
     menu->addChild(m_randomButton);
-    // oh boy
-    // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelBrowserLayer.cpp#L118
-    auto firstArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
-    firstArrow->setPosition({ 35, 25 });
-    firstArrow->setFlipX(true);
-    auto secondArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
-    secondArrow->setPosition({ 15, 25 });
-    secondArrow->setFlipX(true);
-    auto arrowParent = CCNode::create();
-    arrowParent->setContentSize({ 50, 50 });
-    arrowParent->addChild(firstArrow);
-    arrowParent->addChild(secondArrow);
-    arrowParent->setScale(0.4f);
-    m_lastButton = CCMenuItemExt::createSpriteExtra(arrowParent, [this](auto) { page(getMaxPage()); });
-    m_lastButton->setPositionY(m_randomButton->getPositionY() - m_randomButton->getContentSize().height / 2 - m_lastButton->getContentSize().height / 2 - 2.0f);
+
+    auto lastArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
+    lastArrow->setFlipX(true);
+    auto otherLastArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
+    otherLastArrow->setPosition(lastArrow->getContentSize() / 2 + CCPoint { 20.0f, 0.0f });
+    otherLastArrow->setFlipX(true);
+    lastArrow->addChild(otherLastArrow);
+    lastArrow->setScale(0.4f);
+    m_lastButton = CCMenuItemExt::createSpriteExtra(lastArrow, [this](auto) { page(getMaxPage()); });
+    m_lastButton->setPositionY(m_randomButton->getPositionY() - m_randomButton->getContentSize().height / 2 - m_lastButton->getContentSize().height / 2 - 5.0f);
     menu->addChild(m_lastButton);
-    auto x = winSize.width - 3.0f - m_randomButton->getContentSize().width / 2;
+    auto x = winSize.width - m_randomButton->getContentSize().width / 2 - 3.0f;
     m_pageButton->setPositionX(x);
     m_randomButton->setPositionX(x);
-    m_lastButton->setPositionX(x);
-    // https://github.com/Cvolton/betterinfo-geode/blob/v4.0.0/src/hooks/LevelBrowserLayer.cpp#L164
+    m_lastButton->setPositionX(x - 4.0f);
+
+    auto firstArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
     auto otherFirstArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
-    otherFirstArrow->setPosition({ 35, 34.5 });
-    auto otherSecondArrow = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
-    otherSecondArrow->setPosition({ 15, 34.5 });
-    auto otherArrowParent = CCNode::create();
-    otherArrowParent->setContentSize({ 50, 69 });
-    otherArrowParent->addChild(otherFirstArrow);
-    otherArrowParent->addChild(otherSecondArrow);
-    otherArrowParent->setScale(0.4f);
-    m_firstButton = CCMenuItemExt::createSpriteExtra(otherArrowParent, [this](auto) { page(0); });
-    m_firstButton->setPosition(17.5f, winSize.height - 64.0f);
+    otherFirstArrow->setPosition(firstArrow->getContentSize() / 2 - CCPoint { 20.0f, 0.0f });
+    firstArrow->addChild(otherFirstArrow);
+    firstArrow->setScale(0.4f);
+    m_firstButton = CCMenuItemExt::createSpriteExtra(firstArrow, [this](auto) { page(0); });
+    m_firstButton->setPosition(21.5f, m_lastButton->getPositionY());
     menu->addChild(m_firstButton);
 
     m_loadingCircle = LoadingCircle::create();
@@ -181,8 +162,7 @@ bool IDListLayer::init() {
     m_loadingCircle->show();
     m_loadingCircle->setVisible(false);
 
-    m_searchBarView->setVisible(false);
-    m_searchBar->setVisible(false);
+    m_searchBarMenu->setVisible(false);
     m_leftButton->setVisible(false);
     m_rightButton->setVisible(false);
     m_firstButton->setVisible(false);
@@ -195,10 +175,8 @@ bool IDListLayer::init() {
         if (!IntegratedDemonlist::PEMONLIST.empty()) populateList("");
         else IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() { populateList(""); });
     }
-    else {
-        if (!IntegratedDemonlist::AREDL.empty()) populateList("");
-        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { populateList(""); });
-    }
+    else if (!IntegratedDemonlist::AREDL.empty()) populateList("");
+    else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() { populateList(""); });
 
     return true;
 }
@@ -206,31 +184,35 @@ bool IDListLayer::init() {
 void IDListLayer::addSearchBar() {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
-    m_searchBarView = CCLayerColor::create({ 194, 114, 62, 255 }, 358.0f, 30.0f);
-    m_searchBarView->setPosition(0.0f, 190.0f);
-    auto searchBarMenu = CCMenu::create();
-    searchBarMenu->setPosition(337.0f, 15.0f);
+    m_searchBarMenu = CCMenu::create();
+    m_searchBarMenu->setContentSize({ 358.0f, 30.0f });
+    m_searchBarMenu->setPosition(0.0f, 190.0f);
+    m_list->addChild(m_searchBarMenu);
+
+    m_searchBarMenu->addChild(CCLayerColor::create({ 194, 114, 62, 255 }, 358.0f, 30.0f));
+
     auto searchButtonSpr = CCSprite::createWithSpriteFrameName("gj_findBtn_001.png");
     searchButtonSpr->setScale(0.7f);
     auto searchButton = CCMenuItemExt::createSpriteExtra(searchButtonSpr, [this](auto) { search(); });
-    searchBarMenu->addChild(searchButton);
-    auto searchBarBg = CCScale9Sprite::create("square02b_001.png", { 0.0f, 0.0f, 80.0f, 80.0f });
-    searchBarBg->setPosition(165.0f, 15.0f);
-    searchBarBg->setContentSize({ 620.0f, 40.0f });
-    searchBarBg->setColor({ 126, 59, 7 });
-    searchBarBg->setScale(0.5f);
-    m_searchBarView->addChild(searchBarMenu);
-    m_searchBarView->addChild(searchBarBg);
+    searchButton->setPosition(337.0f, 15.0f);
+    m_searchBarMenu->addChild(searchButton);
 
-    m_list->addChild(m_searchBarView);
+    m_searchBar = TextInput::create(413.3f, "Search Demons...");
+    m_searchBar->setCommonFilter(CommonFilter::Any);
+    m_searchBar->setPosition(165.0f, 15.0f);
+    m_searchBar->setTextAlign(TextInputAlign::Left);
+    m_searchBar->getInputNode()->setLabelPlaceholderScale(0.53f);
+    m_searchBar->getInputNode()->setMaxLabelScale(0.53f);
+    m_searchBar->setScale(0.75f);
+    m_searchBar->setCallback([this](std::string const& text) { m_searchBarText = text; });
+    m_searchBarMenu->addChild(m_searchBar);
 }
 
 void IDListLayer::populateList(std::string query) {
     m_pageLabel->setString(std::to_string(m_page + 1).c_str());
     m_loadingCircle->setVisible(true);
     m_list->m_listView->setVisible(false);
-    m_searchBarView->setVisible(false);
-    m_searchBar->setVisible(false);
+    m_searchBarMenu->setVisible(false);
     m_countLabel->setVisible(false);
     m_leftButton->setVisible(false);
     m_rightButton->setVisible(false);
@@ -241,7 +223,7 @@ void IDListLayer::populateList(std::string query) {
     m_fullSearchResults.clear();
 
     auto& list = PEMONLIST ? IntegratedDemonlist::PEMONLIST : IntegratedDemonlist::AREDL;
-    if (query != m_query && !query.empty()) {
+    if (!query.empty()) {
         auto queryLowercase = string::toLower(query);
         for (auto const& level : list) {
             if (string::startsWith(string::toLower(level.name), queryLowercase)) m_fullSearchResults.push_back(std::to_string(level.id));
@@ -287,7 +269,7 @@ void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     m_list->setPosition(winSize / 2 - m_list->getContentSize() / 2);
     addChild(m_list);
     addSearchBar();
-    m_searchBar->setVisible(true);
+    m_searchBar->setString(m_searchBarText);
     m_countLabel->setVisible(true);
     m_loadingCircle->setVisible(false);
     if (m_fullSearchResults.size() > 10) {
@@ -302,8 +284,7 @@ void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
 }
 
 void IDListLayer::loadLevelsFailed(const char*) {
-    m_searchBar->setVisible(true);
-    m_searchBarView->setVisible(true);
+    m_searchBarMenu->setVisible(true);
     m_countLabel->setVisible(true);
     m_loadingCircle->setVisible(false);
     FLAlertLayer::create("Load Failed", "Failed to load levels. Please try again later.", "OK")->show();
@@ -316,15 +297,14 @@ void IDListLayer::setupPageInfo(gd::string, const char*) {
 }
 
 void IDListLayer::search() {
-    auto searchString = m_searchBar->getString();
-    if (m_query != searchString) {
-        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this, searchString]() {
+    if (m_query != m_searchBarText) {
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this]() {
             m_page = 0;
-            populateList(searchString);
+            populateList(m_searchBarText);
         });
-        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this, searchString]() {
+        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this]() {
             m_page = 0;
-            populateList(searchString);
+            populateList(m_searchBarText);
         });
     }
 }
@@ -333,10 +313,6 @@ void IDListLayer::page(int page) {
     auto maxPage = getMaxPage() + 1;
     m_page = (maxPage + (page % maxPage)) % maxPage;
     populateList(m_query);
-}
-
-void IDListLayer::deselectKeyboard() {
-    m_searchBar->onClickTrackNode(false);
 }
 
 void IDListLayer::keyDown(enumKeyCodes key) {
