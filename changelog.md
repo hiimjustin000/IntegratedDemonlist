@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.5.2 (2024-06-21)
+- Fixed a bug where the demonlist page would crash the game on macOS
+
 ## v1.5.1 (2024-06-20)
 - Tweaked the UI of the demonlist page
 - Fixed a bug where the refresh button would empty the list
