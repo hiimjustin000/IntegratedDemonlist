@@ -26,7 +26,7 @@ class $modify(IDLevelSearchLayer, LevelSearchLayer) {
         auto demonlistButtonSprite = CircleButtonSprite::createWithSpriteFrameName("diffIcon_10_btn_001.png", 1.0f, CircleBaseColor::Pink, CircleBaseSize::Medium);
         demonlistButtonSprite->setScale(0.8f);
         auto demonlistButton = CCMenuItemExt::createSpriteExtra(demonlistButtonSprite, [](auto) {
-            CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.5f, IDListLayer::scene()));
+            CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, IDListLayer::scene()));
         });
         demonlistButton->setID("demonlist-button"_spr);
         auto menu = getChildByID("other-filter-menu");

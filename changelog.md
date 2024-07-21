@@ -1,4 +1,9 @@
 # Integrated Demonlist Changelog
+## v1.5.3 (2024-07-20)
+- Highlighted the search button when searching for a demon in the demonlist page
+- Added a gallery to the mod's about page
+- Fixed a bug where clicking the demonlist button would erase the search box of the level search menu
+
 ## v1.5.2 (2024-06-21)
 - Fixed a bug where the demonlist page would crash the game on macOS
 

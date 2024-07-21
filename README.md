@@ -8,5 +8,9 @@ A mod that integrates [aredl.net](https://aredl.net) and [pemonlist.com](https:/
 - A button that allows you to switch between the AREDL (For classic demons) and the Pemonlist (For platformer demons).
 - If on the list, and if enabled, there will be text on the demon's search box that states its position on the list.
 
+# Gallery
+![AREDL](./resources/aredl.png)\
+![Pemonlist](./resources/pemonlist.png)
+
 # License
 This mod is licensed under the [MIT License](./LICENSE).
