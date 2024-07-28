@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.5.5 (2024-07-28)
+- Altered the appearance of the demonlist button
+
 ## v1.5.4 (2024-07-27)
 - Fixed a bug where the demonlist page would sometimes crash the game
 

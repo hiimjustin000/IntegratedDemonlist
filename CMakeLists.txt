@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-project(IntegratedDemonlist VERSION 1.5.4)
+project(IntegratedDemonlist VERSION 1.5.5)
 
 add_library(${PROJECT_NAME} SHARED
     src/IDListLayer.cpp
