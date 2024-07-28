@@ -1,11 +1,11 @@
 {
-    "geode": "3.3.0",
+    "geode": "3.3.1",
     "gd": {
         "android": "2.206",
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.5.3",
+    "version": "v1.5.4",
     "id": "hiimjustin000.integrated_demonlist",
     "name": "Integrated Demonlist",
     "developer": "hiimjustin000",

@@ -255,7 +255,7 @@ void IDListLayer::populateList(std::string query) {
 
 int IDListLayer::getMaxPage() {
     auto size = m_fullSearchResults.size();
-    return (size % 10 == 0 ? size : size + (10 - (size % 10))) / 10 - 1;
+    return (size != 0 ? size % 10 == 0 ? size : size + (10 - (size % 10)) : 10) / 10 - 1;
 }
 
 void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {

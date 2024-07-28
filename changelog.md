@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.5.4 (2024-07-27)
+- Fixed a bug where the demonlist page would sometimes crash the game
+
 ## v1.5.3 (2024-07-20)
 - Highlighted the search button when searching for a demon in the demonlist page
 - Added a gallery to the mod's about page
