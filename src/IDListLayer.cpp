@@ -345,4 +345,6 @@ void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
 
 IDListLayer::~IDListLayer() {
     CC_SAFE_RELEASE(m_loadingCircle);
+    auto glm = GameLevelManager::sharedState();
+    if (glm->m_levelManagerDelegate == this) glm->m_levelManagerDelegate = nullptr;
 }
