@@ -1,4 +1,8 @@
 # Integrated Demonlist Changelog
+## v1.5.7 (2024-08-19)
+- Updated the list of AREDL owners
+- Added additional links to the mod info page
+
 ## v1.5.6 (2024-08-19)
 - Fixed a bug where the demonlist page would crash the game if it was exited too quickly
 

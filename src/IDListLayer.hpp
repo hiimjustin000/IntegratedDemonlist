@@ -5,7 +5,7 @@ private:
     inline static bool PEMONLIST = false;
     inline static const char* AREDL_INFO =
         "The <cg>All Rated Extreme Demons List</c> (<cg>AREDL</c>) is an <cp>unofficial ranking</c> of all rated <cj>classic mode</c> <cr>extreme demons</c> in Geometry Dash.\n"
-        "It is managed by <cy>iiLogan</c>, <cy>SEDTHEPRODIGY</c>, <cy>Megu</c>, and <cy>Minebox260</c>.";
+        "It is managed by <cy>Kuro</c> and <cy>Padahk</c>.";
     inline static const char* PEMONLIST_INFO =
         "The <cg>Pemonlist</c> is an <cp>unofficial ranking</c> of all rated <cj>platformer mode</c> <cr>demons</c> in Geometry Dash.\n"
         "It is managed by <cy>camila314</c>, <cy>Extatica</c>, and <cy>mariokirby1703</c>.";
