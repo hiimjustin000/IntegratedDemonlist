@@ -5,7 +5,7 @@
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.5.7",
+    "version": "v1.5.8",
     "id": "hiimjustin000.integrated_demonlist",
     "name": "Integrated Demonlist",
     "developer": "hiimjustin000",
@@ -39,7 +39,7 @@
     ],
     "links": {
         "community": "https://discord.gg/QVKmbvBXA7",
-        "source": "https://github.com/hiimjustin000/FakeRate",
+        "source": "https://github.com/hiimjustin000/IntegratedDemonlist",
         "homepage": "https://www.hiimjustin000.com"
     },
     "tags": [

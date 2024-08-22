@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.5.8 (2024-08-22)
+- Fixed the source link on the mod info page
+
 ## v1.5.7 (2024-08-19)
 - Updated the list of AREDL owners
 - Added additional links to the mod info page
