@@ -82,28 +82,50 @@ bool IDListLayer::init() {
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
     auto& refreshBtnSize = refreshBtnSpr->getContentSize();
     auto refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto) {
-        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this] { populateList(m_query); });
-        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this] { populateList(m_query); });
+        showLoading();
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener),
+            m_loadingCircle, [this] { populateList(m_query); });
+        else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener),
+            m_loadingCircle, [this] { populateList(m_query); });
     });
     refreshButton->setPosition(winSize.width - refreshBtnSize.width / 2 - 4.0f, refreshBtnSize.height / 2 + 4.0f);
     menu->addChild(refreshButton, 2);
 
-    auto listToggler = CCMenuItemExt::createTogglerWithFrameName("GJ_moonsIcon_001.png", "GJ_starsIcon_001.png", 1.1f, [this](auto) {
-        PEMONLIST = !PEMONLIST;
-        if (PEMONLIST) {
-            IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this] { page(0); });
-            m_infoButton->m_title = "Pemonlist";
-            m_infoButton->m_description = PEMONLIST_INFO;
+    m_starToggle = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_starsIcon_001.png", 1.1f, [this](auto) {
+        if (!PEMONLIST) return;
+        PEMONLIST = false;
+        m_starToggle->setColor({ 255, 255, 255 });
+        m_moonToggle->setColor({ 125, 125, 125 });
+        showLoading();
+        if (auto listTitle = static_cast<CCLabelBMFont*>(m_list->getChildByID("title"))) {
+            listTitle->setString("All Rated Extreme Demons List");
+            listTitle->limitLabelWidth(280.0f, 0.8f, 0.0f);
         }
-        else {
-            IntegratedDemonlist::loadAREDL(std::move(m_listener), [this] { page(0); });
-            m_infoButton->m_title = "All Rated Extreme Demons List";
-            m_infoButton->m_description = AREDL_INFO;
-        }
+        m_infoButton->m_title = "All Rated Extreme Demons List";
+        m_infoButton->m_description = AREDL_INFO;
+        IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { page(0); });
     });
-    listToggler->toggle(PEMONLIST);
-    listToggler->setPosition(30.0f, 60.0f);
-    menu->addChild(listToggler, 2);
+    m_starToggle->setPosition(30.0f, 60.0f);
+    m_starToggle->setColor(PEMONLIST ? ccColor3B { 125, 125, 125 } : ccColor3B { 255, 255, 255 });
+    menu->addChild(m_starToggle, 2);
+
+    m_moonToggle = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_moonsIcon_001.png", 1.1f, [this](auto) {
+        if (PEMONLIST) return;
+        PEMONLIST = true;
+        m_starToggle->setColor({ 125, 125, 125 });
+        m_moonToggle->setColor({ 255, 255, 255 });
+        showLoading();
+        if (auto listTitle = static_cast<CCLabelBMFont*>(m_list->getChildByID("title"))) {
+            listTitle->setString("Pemonlist");
+            listTitle->limitLabelWidth(280.0f, 0.8f, 0.0f);
+        }
+        m_infoButton->m_title = "Pemonlist";
+        m_infoButton->m_description = PEMONLIST_INFO;
+        IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { page(0); });
+    });
+    m_moonToggle->setPosition(60.0f, 60.0f);
+    m_moonToggle->setColor(PEMONLIST ? ccColor3B { 255, 255, 255 } : ccColor3B { 125, 125, 125 });
+    menu->addChild(m_moonToggle, 2);
 
     auto pageBtnSpr = CCSprite::create("GJ_button_02.png");
     pageBtnSpr->setScale(0.7f);
@@ -112,7 +134,7 @@ bool IDListLayer::init() {
     m_pageLabel->setPosition(pageBtnSpr->getContentSize() / 2);
     pageBtnSpr->addChild(m_pageLabel);
     m_pageButton = CCMenuItemExt::createSpriteExtra(pageBtnSpr, [this](auto) {
-        auto popup = SetIDPopup::create(m_page + 1, 1, getMaxPage() + 1, "Go to Page", "Go", true, 1, 60.0f, false, false);
+        auto popup = SetIDPopup::create(m_page + 1, 1, (m_fullSearchResults.size() + 9) / 10, "Go to Page", "Go", true, 1, 60.0f, false, false);
         popup->m_delegate = this;
         popup->show();
     });
@@ -121,7 +143,7 @@ bool IDListLayer::init() {
     // Sprite by Cvolton
     m_randomButton = CCMenuItemExt::createSpriteExtraWithFilename("BI_randomBtn_001.png"_spr, 0.9f, [this](auto) {
         static std::mt19937 mt(std::random_device{}());
-        page(std::uniform_int_distribution<int>(0, getMaxPage())(mt));
+        page(std::uniform_int_distribution<int>(0, (m_fullSearchResults.size() - 1) / 10)(mt));
     });
     m_randomButton->setPositionY(m_pageButton->getPositionY() - m_pageButton->getContentSize().height / 2 - m_randomButton->getContentSize().height / 2 - 5.0f);
     menu->addChild(m_randomButton);
@@ -133,7 +155,7 @@ bool IDListLayer::init() {
     otherLastArrow->setFlipX(true);
     lastArrow->addChild(otherLastArrow);
     lastArrow->setScale(0.4f);
-    m_lastButton = CCMenuItemExt::createSpriteExtra(lastArrow, [this](auto) { page(getMaxPage()); });
+    m_lastButton = CCMenuItemExt::createSpriteExtra(lastArrow, [this](auto) { page((m_fullSearchResults.size() - 1) / 10); });
     m_lastButton->setPositionY(m_randomButton->getPositionY() - m_randomButton->getContentSize().height / 2 - m_lastButton->getContentSize().height / 2 - 5.0f);
     menu->addChild(m_lastButton);
     auto x = winSize.width - m_randomButton->getContentSize().width / 2 - 3.0f;
@@ -154,23 +176,16 @@ bool IDListLayer::init() {
     m_loadingCircle->setParentLayer(this);
     m_loadingCircle->retain();
     m_loadingCircle->show();
-    m_loadingCircle->setVisible(false);
 
-    m_searchBarMenu->setVisible(false);
-    m_leftButton->setVisible(false);
-    m_rightButton->setVisible(false);
-    m_firstButton->setVisible(false);
-    m_lastButton->setVisible(false);
-    m_pageButton->setVisible(false);
-    m_randomButton->setVisible(false);
-
+    showLoading();
     setKeyboardEnabled(true);
+
     if (PEMONLIST) {
         if (!IntegratedDemonlist::PEMONLIST.empty()) populateList("");
-        else IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this] { populateList(""); });
+        else IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { populateList(""); });
     }
     else if (!IntegratedDemonlist::AREDL.empty()) populateList("");
-    else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this] { populateList(""); });
+    else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { populateList(""); });
 
     return true;
 }
@@ -206,7 +221,7 @@ void IDListLayer::addSearchBar() {
     m_searchBarMenu->addChild(m_searchBar);
 }
 
-void IDListLayer::populateList(std::string query) {
+void IDListLayer::showLoading() {
     m_pageLabel->setString(std::to_string(m_page + 1).c_str());
     m_loadingCircle->setVisible(true);
     m_list->m_listView->setVisible(false);
@@ -218,6 +233,9 @@ void IDListLayer::populateList(std::string query) {
     m_lastButton->setVisible(false);
     m_pageButton->setVisible(false);
     m_randomButton->setVisible(false);
+}
+
+void IDListLayer::populateList(std::string query) {
     m_fullSearchResults.clear();
 
     auto& list = PEMONLIST ? IntegratedDemonlist::PEMONLIST : IntegratedDemonlist::AREDL;
@@ -253,11 +271,6 @@ void IDListLayer::populateList(std::string query) {
     }
 }
 
-int IDListLayer::getMaxPage() {
-    auto size = m_fullSearchResults.size();
-    return (size != 0 ? size % 10 == 0 ? size : size + (10 - (size % 10)) : 10) / 10 - 1;
-}
-
 void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
     if (m_list->getParent() == this) removeChild(m_list);
@@ -271,7 +284,7 @@ void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
     m_countLabel->setVisible(true);
     m_loadingCircle->setVisible(false);
     if (m_fullSearchResults.size() > 10) {
-        auto maxPage = getMaxPage();
+        auto maxPage = (m_fullSearchResults.size() - 1) / 10;
         m_leftButton->setVisible(m_page > 0);
         m_rightButton->setVisible(m_page < maxPage);
         m_firstButton->setVisible(m_page > 0);
@@ -296,11 +309,12 @@ void IDListLayer::setupPageInfo(gd::string, const char*) {
 
 void IDListLayer::search() {
     if (m_query != m_searchBarText) {
-        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_listener), [this] {
+        showLoading();
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] {
             m_page = 0;
             populateList(m_searchBarText);
         });
-        else IntegratedDemonlist::loadAREDL(std::move(m_listener), [this] {
+        else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener),m_loadingCircle,  [this] {
             m_page = 0;
             populateList(m_searchBarText);
         });
@@ -308,8 +322,9 @@ void IDListLayer::search() {
 }
 
 void IDListLayer::page(int page) {
-    auto maxPage = getMaxPage() + 1;
+    auto maxPage = (m_fullSearchResults.size() + 9) / 10;
     m_page = (maxPage + (page % maxPage)) % maxPage;
+    showLoading();
     populateList(m_query);
 }
 
@@ -339,7 +354,8 @@ void IDListLayer::keyBackClicked() {
 }
 
 void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
-    m_page = std::min(std::max(page - 1, 0), getMaxPage());
+    m_page = std::min(std::max(page - 1, 0), ((int)m_fullSearchResults.size() - 1) / 10);
+    showLoading();
     populateList(m_query);
 }
 

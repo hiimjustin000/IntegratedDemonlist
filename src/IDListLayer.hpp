@@ -18,9 +18,12 @@ public:
     void keyDown(enumKeyCodes) override;
     void keyBackClicked() override;
 
-    ~IDListLayer();
+    ~IDListLayer() override;
 protected:
-    EventListener<web::WebTask> m_listener;
+    EventListener<web::WebTask> m_aredlListener;
+    EventListener<web::WebTask> m_aredlOkListener;
+    EventListener<web::WebTask> m_pemonlistListener;
+    EventListener<web::WebTask> m_pemonlistOkListener;
     GJListLayer* m_list;
     CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
@@ -36,6 +39,8 @@ protected:
     CCMenuItemSpriteExtra* m_randomButton;
     CCMenuItemSpriteExtra* m_firstButton;
     CCMenuItemSpriteExtra* m_lastButton;
+    CCMenuItemSpriteExtra* m_starToggle;
+    CCMenuItemSpriteExtra* m_moonToggle;
     int m_page = 0;
     std::string m_query = "";
     std::string m_searchBarText = "";
@@ -43,8 +48,8 @@ protected:
 
     bool init() override;
     void addSearchBar();
+    void showLoading();
     void populateList(std::string query);
-    int getMaxPage();
     void loadLevelsFinished(CCArray*, const char*) override;
     void loadLevelsFailed(const char*) override;
     void loadLevelsFinished(CCArray* levels, const char* key, int) override {

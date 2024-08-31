@@ -1,4 +1,10 @@
 # Integrated Demonlist Changelog
+## v1.5.9 (2024-08-30)
+- Moved the "Failed to load" notifications to log messages
+- Added the status code to the "Load Failed" popup
+- Split the AREDL/Pemonlist button into two separate buttons
+- Fixed the loading symbol only showing after loading the demonlist
+
 ## v1.5.8 (2024-08-22)
 - Fixed the source link on the mod info page
 

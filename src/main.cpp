@@ -2,10 +2,6 @@
 
 #include <Geode/modify/MenuLayer.hpp>
 class $modify(IDMenuLayer, MenuLayer) {
-    struct Fields {
-        EventListener<web::WebTask> m_listener;
-    };
-
     bool init() {
         if (!MenuLayer::init()) return false;
 
