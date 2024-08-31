@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.5.10 (2024-08-31)
+- Fixed a bug where the game would crash if the Pemonlist or AREDL button was clicked when the search results were empty
+
 ## v1.5.9 (2024-08-30)
 - Moved the "Failed to load" notifications to log messages
 - Added the status code to the "Load Failed" popup

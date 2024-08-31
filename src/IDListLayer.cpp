@@ -103,6 +103,7 @@ bool IDListLayer::init() {
         }
         m_infoButton->m_title = "All Rated Extreme Demons List";
         m_infoButton->m_description = AREDL_INFO;
+        m_fullSearchResults.clear();
         IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { page(0); });
     });
     m_starToggle->setPosition(30.0f, 60.0f);
@@ -121,6 +122,7 @@ bool IDListLayer::init() {
         }
         m_infoButton->m_title = "Pemonlist";
         m_infoButton->m_description = PEMONLIST_INFO;
+        m_fullSearchResults.clear();
         IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { page(0); });
     });
     m_moonToggle->setPosition(60.0f, 60.0f);
@@ -323,7 +325,7 @@ void IDListLayer::search() {
 
 void IDListLayer::page(int page) {
     auto maxPage = (m_fullSearchResults.size() + 9) / 10;
-    m_page = (maxPage + (page % maxPage)) % maxPage;
+    m_page = maxPage > 0 ? (maxPage + (page % maxPage)) % maxPage : 0;
     showLoading();
     populateList(m_query);
 }
