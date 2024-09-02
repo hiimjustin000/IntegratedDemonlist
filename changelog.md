@@ -1,4 +1,8 @@
 # Integrated Demonlist Changelog
+## v1.6.0 (2024-09-01)
+- Added AREDL pack support
+- Fixed a bug where the AREDL would not load at the start of the game
+
 ## v1.5.10 (2024-08-31)
 - Fixed a bug where the game would crash if the Pemonlist or AREDL button was clicked when the search results were empty
 

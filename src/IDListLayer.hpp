@@ -1,4 +1,4 @@
-#include "IntegratedDemonlist.hpp"
+#include "IDPackLayer.hpp"
 
 class IDListLayer : public CCLayer, SetIDPopupDelegate, LevelManagerDelegate {
 private:
@@ -8,7 +8,7 @@ private:
         "It is managed by <cy>Kuro</c> and <cy>Padahk</c>.";
     inline static const char* PEMONLIST_INFO =
         "The <cg>Pemonlist</c> is an <cp>unofficial ranking</c> of all rated <cj>platformer mode</c> <cr>demons</c> in Geometry Dash.\n"
-        "It is managed by <cy>camila314</c>, <cy>Extatica</c>, and <cy>mariokirby1703</c>.";
+        "It is managed by <cy>camila314</c>, <cy>Extatica</c>, <cy>IvanCrafter026</c>, and <cy>Voiddle</c>.";
 public:
     static IDListLayer* create();
     static CCScene* scene();

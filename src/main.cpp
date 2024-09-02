@@ -14,12 +14,36 @@ class $modify(IDMenuLayer, MenuLayer) {
     }
 };
 
+#include <Geode/modify/LevelBrowserLayer.hpp>
+class $modify(IDLevelBrowserLayer, LevelBrowserLayer) {
+    bool init(GJSearchObject* object) {
+        if (!LevelBrowserLayer::init(object)) return false;
+
+        if (object->m_searchType == SearchType::MapPack) {
+            auto winSize = CCDirector::sharedDirector()->getWinSize();
+            auto demonlistButtonSprite = CircleButtonSprite::createWithSprite("ID_demonBtn_001.png"_spr);
+            demonlistButtonSprite->getTopNode()->setScale(1.0f);
+            auto demonlistButton = CCMenuItemExt::createSpriteExtra(demonlistButtonSprite, [](auto) {
+                CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, IDPackLayer::scene()));
+            });
+            demonlistButton->setID("demonlist-button"_spr);
+            auto y = demonlistButtonSprite->getContentHeight() / 2 + 4.0f;
+            auto menu = CCMenu::create(demonlistButton, nullptr);
+            menu->setPosition(winSize.width - y, y);
+            menu->setID("demonlist-menu"_spr);
+            addChild(menu, 2);
+        }
+
+        return true;
+    }
+};
+
 #include <Geode/modify/LevelSearchLayer.hpp>
 class $modify(IDLevelSearchLayer, LevelSearchLayer) {
     bool init(int searchType) {
         if (!LevelSearchLayer::init(searchType)) return false;
 
-        auto demonlistButtonSprite = CircleButtonSprite::createWithSprite("ID_demonBtn_001.png"_spr, 1.0f, CircleBaseColor::Green, CircleBaseSize::Medium);
+        auto demonlistButtonSprite = CircleButtonSprite::createWithSprite("ID_demonBtn_001.png"_spr);
         demonlistButtonSprite->getTopNode()->setScale(1.0f);
         demonlistButtonSprite->setScale(0.8f);
         auto demonlistButton = CCMenuItemExt::createSpriteExtra(demonlistButtonSprite, [](auto) {
@@ -76,9 +100,13 @@ class $modify(IDLevelCell, LevelCell) {
 #include <Geode/modify/CCKeyboardDispatcher.hpp>
 class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
     bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
-        auto layer = CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer");
-        if (key == KEY_Enter && down && layer) {
-            static_cast<IDListLayer*>(layer)->search();
+        if (key == KEY_Enter && down) {
+            auto listLayer = static_cast<IDListLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"));
+            if (listLayer) listLayer->search();
+
+            auto packLayer = static_cast<IDPackLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDPackLayer"));
+            if (packLayer) packLayer->search();
+
             return true;
         }
         else return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
