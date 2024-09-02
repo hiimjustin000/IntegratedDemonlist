@@ -28,7 +28,8 @@ class $modify(IDLevelBrowserLayer, LevelBrowserLayer) {
             });
             demonlistButton->setID("demonlist-button"_spr);
             auto y = demonlistButtonSprite->getContentHeight() / 2 + 4.0f;
-            auto menu = CCMenu::create(demonlistButton, nullptr);
+            auto menu = CCMenu::create();
+            menu->addChild(demonlistButton);
             menu->setPosition(winSize.width - y, y);
             menu->setID("demonlist-menu"_spr);
             addChild(menu, 2);

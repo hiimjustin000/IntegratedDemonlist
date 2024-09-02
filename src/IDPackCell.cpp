@@ -26,12 +26,13 @@ bool IDPackCell::init(IDDemonPack pack) {
     addChild(nameLabel);
 
     auto viewSprite = ButtonSprite::create("View", 50, 0, 0.6f, false, "bigFont.fnt", "GJ_button_01.png", 50.0f);
-    auto viewMenu = CCMenu::create(CCMenuItemExt::createSpriteExtra(viewSprite, [this, pack](auto) {
+    auto viewMenu = CCMenu::create();
+    viewMenu->addChild(CCMenuItemExt::createSpriteExtra(viewSprite, [this, pack](auto) {
         std::vector<std::string> levels;
         for (auto level : pack.levels) levels.push_back(std::to_string(level));
         CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f,
             LevelBrowserLayer::scene(GJSearchObject::create(SearchType::MapPackOnClick, string::join(levels, ",")))));
-    }), nullptr);
+    }));
     viewMenu->setPosition(347.0f - viewSprite->getContentWidth() / 2, 50.0f);
     addChild(viewMenu);
 
