@@ -108,7 +108,7 @@ class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
             auto packLayer = static_cast<IDPackLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDPackLayer"));
             if (packLayer) packLayer->search();
 
-            return true;
+            return listLayer || packLayer;
         }
         else return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
     }

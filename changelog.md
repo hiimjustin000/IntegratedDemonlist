@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.6.1 (2024-09-02)
+- Fixed a bug where the enter key would not work at all
+
 ## v1.6.0 (2024-09-01)
 - Added AREDL pack support
 - Fixed a bug where the AREDL would not load at the start of the game
