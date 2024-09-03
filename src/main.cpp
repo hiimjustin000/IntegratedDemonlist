@@ -113,6 +113,8 @@ class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
                 packLayer->search();
                 return true;
             }
+
+            return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
         }
         else return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
     }
