@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.6.2 (2024-09-03)
+- Actually fix the issue because my God I can't stand this anymore
+
 ## v1.6.1 (2024-09-02)
 - Fixed a bug where the enter key would not work at all
 

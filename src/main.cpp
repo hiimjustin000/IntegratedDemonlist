@@ -103,12 +103,16 @@ class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
     bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
         if (key == KEY_Enter && down) {
             auto listLayer = static_cast<IDListLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"));
-            if (listLayer) listLayer->search();
+            if (listLayer) {
+                listLayer->search();
+                return true;
+            }
 
             auto packLayer = static_cast<IDPackLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDPackLayer"));
-            if (packLayer) packLayer->search();
-
-            return listLayer || packLayer;
+            if (packLayer) {
+                packLayer->search();
+                return true;
+            }
         }
         else return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
     }
