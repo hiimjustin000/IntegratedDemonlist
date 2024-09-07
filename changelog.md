@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.6.3 (2024-09-04)
+- Fixed the Pemonlist not loading at all
+
 ## v1.6.2 (2024-09-03)
 - Actually fix the issue because my God I can't stand this anymore
 

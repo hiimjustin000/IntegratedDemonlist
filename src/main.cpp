@@ -102,14 +102,12 @@ class $modify(IDLevelCell, LevelCell) {
 class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
     bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
         if (key == KEY_Enter && down) {
-            auto listLayer = static_cast<IDListLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"));
-            if (listLayer) {
+            if (auto listLayer = static_cast<IDListLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"))) {
                 listLayer->search();
                 return true;
             }
 
-            auto packLayer = static_cast<IDPackLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDPackLayer"));
-            if (packLayer) {
+            if (auto packLayer = static_cast<IDPackLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDPackLayer"))) {
                 packLayer->search();
                 return true;
             }

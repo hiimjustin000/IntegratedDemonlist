@@ -103,23 +103,24 @@ void IntegratedDemonlist::loadAREDLPacks(
 
 void IntegratedDemonlist::loadPemonlist() {
     static std::optional<web::WebTask> task = std::nullopt;
-    static std::optional<web::WebTask> okTask = std::nullopt;
+    /*static std::optional<web::WebTask> okTask = std::nullopt;
     okTask = web::WebRequest().send("HEAD", PEMONLIST_URL).map([](web::WebResponse* res) {
         if (!res->ok()) {
             log::error("Failed to load Pemonlist with status code {}", res->code());
             return *res;
-        }
+        }*/
 
         task = web::WebRequest().get(PEMONLIST_URL).map([](web::WebResponse* res2) {
             if (res2->ok()) initializeDemons(res2, true);
+            else log::error("Failed to load Pemonlist with status code {}", res2->code());
 
             task = std::nullopt;
             return *res2;
         });
 
-        okTask = std::nullopt;
+        /*okTask = std::nullopt;
         return *res;
-    });
+    });*/
 }
 
 void IntegratedDemonlist::loadPemonlist(
@@ -127,20 +128,24 @@ void IntegratedDemonlist::loadPemonlist(
     LoadingCircle* circle, utils::MiniFunction<void()> callback
 ) {
     auto&& listener = std::move(listenerRef);
-    listener.bind([callback](web::WebTask::Event* e) {
+    listener.bind([callback, circle](web::WebTask::Event* e) {
         if (auto res = e->getValue()) {
             if (res->ok()) {
                 initializeDemons(res, true);
                 callback();
             }
+            else Loader::get()->queueInMainThread([circle, res] {
+                FLAlertLayer::create("Load Failed ({})", fmt::format("Failed to load Pemonlist. Please try again later.", res->code()).c_str(), "OK")->show();
+                circle->setVisible(false);
+            });
         }
     });
 
-    isOk(PEMONLIST_URL, std::move(okListener), [&listener, circle](bool ok, int code) {
-        if (ok) listener.setFilter(web::WebRequest().get(PEMONLIST_URL));
+    /*isOk(PEMONLIST_URL, std::move(okListener), [&listener, circle](bool ok, int code) {
+        if (ok) */listener.setFilter(web::WebRequest().get(PEMONLIST_URL));/*
         else Loader::get()->queueInMainThread([circle, code] {
             FLAlertLayer::create(fmt::format("Load Failed ({})", code).c_str(), "Failed to load Pemonlist. Please try again later.", "OK")->show();
             circle->setVisible(false);
         });
-    });
+    });*/
 }
