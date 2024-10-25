@@ -104,7 +104,8 @@ bool IDListLayer::init() {
         m_infoButton->m_title = "All Rated Extreme Demons List";
         m_infoButton->m_description = AREDL_INFO;
         m_fullSearchResults.clear();
-        IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { page(0); });
+        if (!IntegratedDemonlist::AREDL.empty()) page(0);
+        else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { page(0); });
     });
     m_starToggle->setPosition(30.0f, 60.0f);
     m_starToggle->setColor(PEMONLIST ? ccColor3B { 125, 125, 125 } : ccColor3B { 255, 255, 255 });
@@ -123,7 +124,8 @@ bool IDListLayer::init() {
         m_infoButton->m_title = "Pemonlist";
         m_infoButton->m_description = PEMONLIST_INFO;
         m_fullSearchResults.clear();
-        IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { page(0); });
+        if (!IntegratedDemonlist::PEMONLIST.empty()) page(0);
+        else IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { page(0); });
     });
     m_moonToggle->setPosition(60.0f, 60.0f);
     m_moonToggle->setColor(PEMONLIST ? ccColor3B { 255, 255, 255 } : ccColor3B { 125, 125, 125 });

@@ -1,9 +1,9 @@
 #include "IDListLayer.hpp"
 
-#include <Geode/modify/MenuLayer.hpp>
-class $modify(IDMenuLayer, MenuLayer) {
+#include <Geode/modify/CreatorLayer.hpp>
+class $modify(IDCreatorLayer, CreatorLayer) {
     bool init() {
-        if (!MenuLayer::init()) return false;
+        if (!CreatorLayer::init()) return false;
 
         if (IntegratedDemonlist::TRIED_LOADING) return true;
         IntegratedDemonlist::TRIED_LOADING = true;
@@ -66,35 +66,30 @@ class $modify(IDLevelCell, LevelCell) {
     void loadCustomLevelCell() {
         LevelCell::loadCustomLevelCell();
 
-        if (Mod::get()->getSettingValue<bool>("enable-rank")) {
-            auto rankText = std::string();
-            auto found = std::find_if(IntegratedDemonlist::AREDL.begin(), IntegratedDemonlist::AREDL.end(), [this](auto const& demon) {
-                return demon.id == m_level->m_levelID;
-            });
-            if (found != IntegratedDemonlist::AREDL.end()) rankText = fmt::format("#{} AREDL", found->position);
-            else {
-                found = std::find_if(IntegratedDemonlist::PEMONLIST.begin(), IntegratedDemonlist::PEMONLIST.end(), [this](auto const& demon) {
-                    return demon.id == m_level->m_levelID;
-                });
-                if (found != IntegratedDemonlist::PEMONLIST.end()) rankText = fmt::format("#{} Pemonlist", found->position);
-            }
-            if (!rankText.empty()) {
-                auto rankTextNode = CCLabelBMFont::create(rankText.c_str(), "chatFont.fnt");
-                rankTextNode->setPosition(346.0f, m_level->m_dailyID.value() > 0 ? 6.0f : m_compactView ? 9.0f : 12.0f);
-                rankTextNode->setAnchorPoint({ 1.0f, 1.0f });
-                rankTextNode->setScale(m_compactView ? 0.45f : 0.6f);
-                if (m_level->m_dailyID.value() > 0 || Mod::get()->getSettingValue<bool>("white-rank")) {
-                    rankTextNode->setColor({ 255, 255, 255 });
-                    rankTextNode->setOpacity(200);
-                }
-                else {
-                    rankTextNode->setColor({ 51, 51, 51 });
-                    rankTextNode->setOpacity(152);
-                }
-                rankTextNode->setID("level-rank-label"_spr);
-                m_mainLayer->addChild(rankTextNode);
-            }
+        if (m_level->m_demon.value() <= 0 || !Mod::get()->getSettingValue<bool>("enable-rank")) return;
+
+        std::vector<std::string> positions;
+        auto& list = m_level->m_levelLength == 5 ? IntegratedDemonlist::PEMONLIST : IntegratedDemonlist::AREDL;
+        for (auto const& demon : list) {
+            if (demon.id == m_level->m_levelID) positions.push_back(std::to_string(demon.position));
         }
+        if (positions.empty()) return;
+
+        auto rankTextNode = CCLabelBMFont::create(fmt::format("#{} {}", string::join(positions, "/#"),
+            m_level->m_levelLength == 5 ? "Pemonlist" : "AREDL").c_str(), "chatFont.fnt");
+        rankTextNode->setPosition(346.0f, m_level->m_dailyID.value() > 0 ? 6.0f : 1.0f);
+        rankTextNode->setAnchorPoint({ 1.0f, 0.0f });
+        rankTextNode->setScale(m_compactView ? 0.45f : 0.6f);
+        if (m_level->m_dailyID.value() > 0 || Mod::get()->getSettingValue<bool>("white-rank")) {
+            rankTextNode->setColor({ 255, 255, 255 });
+            rankTextNode->setOpacity(200);
+        }
+        else {
+            rankTextNode->setColor({ 51, 51, 51 });
+            rankTextNode->setOpacity(152);
+        }
+        rankTextNode->setID("level-rank-label"_spr);
+        m_mainLayer->addChild(rankTextNode);
     }
 };
 
@@ -102,18 +97,19 @@ class $modify(IDLevelCell, LevelCell) {
 class $modify(IDKeyboardDispatcher, CCKeyboardDispatcher) {
     bool dispatchKeyboardMSG(enumKeyCodes key, bool down, bool repeat) {
         if (key == KEY_Enter && down) {
-            if (auto listLayer = static_cast<IDListLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDListLayer"))) {
+            auto runningScene = CCDirector::sharedDirector()->getRunningScene();
+
+            if (auto listLayer = static_cast<IDListLayer*>(runningScene->getChildByID("IDListLayer"))) {
                 listLayer->search();
                 return true;
             }
 
-            if (auto packLayer = static_cast<IDPackLayer*>(CCDirector::sharedDirector()->getRunningScene()->getChildByID("IDPackLayer"))) {
+            if (auto packLayer = static_cast<IDPackLayer*>(runningScene->getChildByID("IDPackLayer"))) {
                 packLayer->search();
                 return true;
             }
-
-            return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
         }
-        else return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
+
+        return CCKeyboardDispatcher::dispatchKeyboardMSG(key, down, repeat);
     }
 };

@@ -1,4 +1,9 @@
 # Integrated Demonlist Changelog
+## v1.6.5 (2024-10-25)
+- Fixed two-player demons not appearing in the demonlist twice (Someone wanted this for some reason)
+- Permanently fixed the Pemonlist issue (New API)
+- Fixed the star and moon buttons reloading the demonlist
+
 ## v1.6.4 (2024-10-24)
 - Temporarily fixed a crashing issue with the Pemonlist that would cause the game to not launch
 

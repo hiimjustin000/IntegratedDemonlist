@@ -5,10 +5,10 @@ private:
     inline static bool PEMONLIST = false;
     inline static const char* AREDL_INFO =
         "The <cg>All Rated Extreme Demons List</c> (<cg>AREDL</c>) is an <cp>unofficial ranking</c> of all rated <cj>classic mode</c> <cr>extreme demons</c> in Geometry Dash.\n"
-        "It is managed by <cy>Kuro</c> and <cy>Padahk</c>.";
+        "It is managed by <cy>Padahk</c> and <cy>ley</c>.";
     inline static const char* PEMONLIST_INFO =
         "The <cg>Pemonlist</c> is an <cp>unofficial ranking</c> of all rated <cj>platformer mode</c> <cr>demons</c> in Geometry Dash.\n"
-        "It is managed by <cy>camila314</c>, <cy>Extatica</c>, <cy>IvanCrafter026</c>, and <cy>Voiddle</c>.";
+        "It is managed by <cy>camila314</c>, <cy>Extatica</c>, <cy>IvanCrafter026</c>, <cy>Megu</c>, and <cy>Voiddle</c>.";
 public:
     static IDListLayer* create();
     static CCScene* scene();
