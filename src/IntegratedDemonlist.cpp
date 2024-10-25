@@ -7,6 +7,7 @@
 void IntegratedDemonlist::initializeDemons(web::WebResponse* res, bool pemonlist) {
     auto& list = pemonlist ? PEMONLIST : AREDL;
     list.clear();
+    if (!res->json().has_value()) return Notification::create("Failed to load Pemonlist", NotificationIcon::Error, 2.5f)->show();
     for (auto const& level : res->json().value().as_array()) {
         if (pemonlist || ((!level.contains("legacy") || !level["legacy"].as_bool()) && !level["two_player"].as_bool())) list.push_back({
             level["level_id"].as_int(),
