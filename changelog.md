@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.6.4 (2024-10-24)
+- Temporarily fixed a crashing issue with the Pemonlist that would cause the game to not launch
+
 ## v1.6.3 (2024-09-04)
 - Fixed the Pemonlist not loading at all
 

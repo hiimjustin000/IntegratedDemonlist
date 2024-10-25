@@ -2,12 +2,16 @@
 
 #define AREDL_URL "https://api.aredl.net/api/aredl/levels"
 #define AREDL_PACKS_URL "https://api.aredl.net/api/aredl/packs"
-#define PEMONLIST_URL "https://pemonlist.com/api/list"
+#define PEMONLIST_URL "https://pemonlist.com/api/list?version=1"
 
 void IntegratedDemonlist::initializeDemons(web::WebResponse* res, bool pemonlist) {
     auto& list = pemonlist ? PEMONLIST : AREDL;
     list.clear();
-    for (auto const& level : res->json().value().as_array()) {
+    auto str = res->string().value();
+    std::string error;
+    auto json = matjson::parse(str, error).value_or(matjson::Array());
+    if (!error.empty()) log::error("Failed to parse {}: {}", pemonlist ? "Pemonlist" : "AREDL", error);
+    if (json.is_array()) for (auto const& level : json.as_array()) {
         if (pemonlist || ((!level.contains("legacy") || !level["legacy"].as_bool()) && !level["two_player"].as_bool())) list.push_back({
             level["level_id"].as_int(),
             level["name"].as_string(),

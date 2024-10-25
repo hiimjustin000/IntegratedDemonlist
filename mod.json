@@ -1,16 +1,15 @@
 {
-    "geode": "3.4.0",
+    "geode": "3.8.1",
     "gd": {
         "android": "2.206",
         "win": "2.206",
         "mac": "2.206"
     },
-    "version": "v1.6.3",
+    "version": "v1.6.4",
     "id": "hiimjustin000.integrated_demonlist",
     "name": "Integrated Demonlist",
     "developer": "hiimjustin000",
     "description": "A mod that integrates aredl.net and pemonlist.com into Geometry Dash.",
-    "repository": "https://github.com/hiimjustin000/IntegratedDemonlist",
     "resources": {
         "sprites": [
             "resources/*.png"
