@@ -1,6 +1,6 @@
-#include "IntegratedDemonlist.hpp"
+#include "../IntegratedDemonlist.hpp"
 
-class IDPackCell : public CCLayer {
+class IDPackCell : public cocos2d::CCLayer {
 public:
     static IDPackCell* create(IDDemonPack);
 protected:

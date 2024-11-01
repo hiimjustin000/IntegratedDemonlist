@@ -1,7 +1,5 @@
-#include <Geode/Geode.hpp>
+#pragma once
 #include <Geode/utils/web.hpp>
-
-using namespace geode::prelude;
 
 struct IDListDemon {
     int id;
@@ -20,14 +18,26 @@ public:
     inline static std::vector<IDListDemon> AREDL = {};
     inline static std::vector<IDDemonPack> AREDL_PACKS = {};
     inline static std::vector<IDListDemon> PEMONLIST = {};
-    inline static bool TRIED_LOADING = false;
+    inline static bool AREDL_LOADED = false;
+    inline static bool PEMONLIST_LOADED = false;
 
-    static void initializeAREDL(web::WebResponse*);
-    static void initializePemonlist(web::WebResponse*);
-    static void isOk(std::string const&, EventListener<web::WebTask>&&, MiniFunction<void(bool, int)> callback);
-    static void loadAREDL();
-    static void loadAREDL(EventListener<web::WebTask>&&, EventListener<web::WebTask>&&, LoadingCircle*, MiniFunction<void()> callback);
-    static void loadAREDLPacks(EventListener<web::WebTask>&&, EventListener<web::WebTask>&&, LoadingCircle*, MiniFunction<void()> callback);
-    static void loadPemonlist();
-    static void loadPemonlist(EventListener<web::WebTask>&&, EventListener<web::WebTask>&&, LoadingCircle*, MiniFunction<void()> callback);
+    static void isOk(std::string const&, geode::EventListener<geode::utils::web::WebTask>&&, std::function<void(bool, int)> const&);
+    static void loadAREDL(
+        geode::EventListener<geode::utils::web::WebTask>&&,
+        geode::EventListener<geode::utils::web::WebTask>&&,
+        LoadingCircle*,
+        std::function<void()> const&
+    );
+    static void loadAREDLPacks(
+        geode::EventListener<geode::utils::web::WebTask>&&,
+        geode::EventListener<geode::utils::web::WebTask>&&,
+        LoadingCircle*,
+        std::function<void()> const&
+    );
+    static void loadPemonlist(
+        geode::EventListener<geode::utils::web::WebTask>&&,
+        geode::EventListener<geode::utils::web::WebTask>&&,
+        LoadingCircle*,
+        std::function<void()> const&
+    );
 };

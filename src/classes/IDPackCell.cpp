@@ -1,5 +1,7 @@
 #include "IDPackCell.hpp"
 
+using namespace geode::prelude;
+
 IDPackCell* IDPackCell::create(IDDemonPack pack) {
     auto ret = new IDPackCell();
     if (ret->init(pack)) {

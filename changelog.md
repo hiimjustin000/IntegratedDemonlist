@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.7.0 (2024-11-01)
+- Changed ranking text to load individually on cell load rather than all at once in the main menu
+
 ## v1.6.5 (2024-10-25)
 - Fixed two-player demons not appearing in the demonlist twice (Someone wanted this for some reason)
 - Permanently fixed the Pemonlist issue (New API)

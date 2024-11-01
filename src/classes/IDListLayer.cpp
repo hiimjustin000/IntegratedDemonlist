@@ -1,8 +1,11 @@
 #include <random>
-#include "IDPackLayer.hpp"
+#include "../IntegratedDemonlist.hpp"
+#include "IDListLayer.hpp"
 
-IDPackLayer* IDPackLayer::create() {
-    auto ret = new IDPackLayer();
+using namespace geode::prelude;
+
+IDListLayer* IDListLayer::create() {
+    auto ret = new IDListLayer();
     if (ret->init()) {
         ret->autorelease();
         return ret;
@@ -11,16 +14,16 @@ IDPackLayer* IDPackLayer::create() {
     return nullptr;
 }
 
-CCScene* IDPackLayer::scene() {
+CCScene* IDListLayer::scene() {
     auto ret = CCScene::create();
-    ret->addChild(IDPackLayer::create());
+    ret->addChild(IDListLayer::create());
     return ret;
 }
 
-bool IDPackLayer::init() {
+bool IDListLayer::init() {
     if (!CCLayer::init()) return false;
 
-    setID("IDPackLayer");
+    setID("IDListLayer");
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
     auto bg = CCSprite::create("GJ_gradientBG.png");
@@ -49,7 +52,8 @@ bool IDPackLayer::init() {
     m_countLabel->setPosition(winSize.width - 7.0f, winSize.height - 3.0f);
     addChild(m_countLabel);
 
-    m_list = GJListLayer::create(ListView::create(CCArray::create(), 100.0f, 356.0f, 190.0f), "AREDL Packs", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
+    m_list = GJListLayer::create(CustomListView::create(CCArray::create(), BoomListType::Level, 190.0f, 356.0f),
+        PEMONLIST ? "Pemonlist" : "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getContentSize() / 2);
     addChild(m_list);
@@ -74,19 +78,61 @@ bool IDPackLayer::init() {
     m_rightButton->setPosition(winSize.width - 24.0f, winSize.height / 2);
     menu->addChild(m_rightButton);
 
-    auto infoButton = InfoAlertButton::create("AREDL Packs", AREDL_PACK_INFO, 1.0f);
-    infoButton->setPosition(30.0f, 30.0f);
-    menu->addChild(infoButton, 2);
+    m_infoButton = InfoAlertButton::create(PEMONLIST ? "Pemonlist" : "All Rated Extreme Demons List", PEMONLIST ? PEMONLIST_INFO : AREDL_INFO, 1.0f);
+    m_infoButton->setPosition(30.0f, 30.0f);
+    menu->addChild(m_infoButton, 2);
 
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
     auto& refreshBtnSize = refreshBtnSpr->getContentSize();
     auto refreshButton = CCMenuItemExt::createSpriteExtra(refreshBtnSpr, [this](auto) {
         showLoading();
-        IntegratedDemonlist::loadAREDLPacks(std::move(m_aredlListener), std::move(m_aredlOkListener),
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener),
+            m_loadingCircle, [this] { populateList(m_query); });
+        else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener),
             m_loadingCircle, [this] { populateList(m_query); });
     });
     refreshButton->setPosition(winSize.width - refreshBtnSize.width / 2 - 4.0f, refreshBtnSize.height / 2 + 4.0f);
     menu->addChild(refreshButton, 2);
+
+    m_starToggle = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_starsIcon_001.png", 1.1f, [this](auto) {
+        if (!PEMONLIST) return;
+        PEMONLIST = false;
+        m_starToggle->setColor({ 255, 255, 255 });
+        m_moonToggle->setColor({ 125, 125, 125 });
+        showLoading();
+        if (auto listTitle = static_cast<CCLabelBMFont*>(m_list->getChildByID("title"))) {
+            listTitle->setString("All Rated Extreme Demons List");
+            listTitle->limitLabelWidth(280.0f, 0.8f, 0.0f);
+        }
+        m_infoButton->m_title = "All Rated Extreme Demons List";
+        m_infoButton->m_description = AREDL_INFO;
+        m_fullSearchResults.clear();
+        if (IntegratedDemonlist::AREDL_LOADED) page(0);
+        else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { page(0); });
+    });
+    m_starToggle->setPosition(30.0f, 60.0f);
+    m_starToggle->setColor(PEMONLIST ? ccColor3B { 125, 125, 125 } : ccColor3B { 255, 255, 255 });
+    menu->addChild(m_starToggle, 2);
+
+    m_moonToggle = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_moonsIcon_001.png", 1.1f, [this](auto) {
+        if (PEMONLIST) return;
+        PEMONLIST = true;
+        m_starToggle->setColor({ 125, 125, 125 });
+        m_moonToggle->setColor({ 255, 255, 255 });
+        showLoading();
+        if (auto listTitle = static_cast<CCLabelBMFont*>(m_list->getChildByID("title"))) {
+            listTitle->setString("Pemonlist");
+            listTitle->limitLabelWidth(280.0f, 0.8f, 0.0f);
+        }
+        m_infoButton->m_title = "Pemonlist";
+        m_infoButton->m_description = PEMONLIST_INFO;
+        m_fullSearchResults.clear();
+        if (IntegratedDemonlist::PEMONLIST_LOADED) page(0);
+        else IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { page(0); });
+    });
+    m_moonToggle->setPosition(60.0f, 60.0f);
+    m_moonToggle->setColor(PEMONLIST ? ccColor3B { 255, 255, 255 } : ccColor3B { 125, 125, 125 });
+    menu->addChild(m_moonToggle, 2);
 
     auto pageBtnSpr = CCSprite::create("GJ_button_02.png");
     pageBtnSpr->setScale(0.7f);
@@ -141,13 +187,17 @@ bool IDPackLayer::init() {
     showLoading();
     setKeyboardEnabled(true);
 
-    if (!IntegratedDemonlist::AREDL_PACKS.empty()) populateList("");
-    else IntegratedDemonlist::loadAREDLPacks(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { populateList(""); });
+    if (PEMONLIST) {
+        if (IntegratedDemonlist::PEMONLIST_LOADED) populateList("");
+        else IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] { populateList(""); });
+    }
+    else if (IntegratedDemonlist::AREDL_LOADED) populateList("");
+    else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] { populateList(""); });
 
     return true;
 }
 
-void IDPackLayer::addSearchBar() {
+void IDListLayer::addSearchBar() {
     auto winSize = CCDirector::sharedDirector()->getWinSize();
 
     m_searchBarMenu = CCMenu::create();
@@ -167,7 +217,7 @@ void IDPackLayer::addSearchBar() {
         m_searchBarMenu->addChild(searchButton);
     }
 
-    m_searchBar = TextInput::create(413.3f, "Search Packs...");
+    m_searchBar = TextInput::create(413.3f, "Search Demons...");
     m_searchBar->setCommonFilter(CommonFilter::Any);
     m_searchBar->setPosition(165.0f, 15.0f);
     m_searchBar->setTextAlign(TextInputAlign::Left);
@@ -178,7 +228,7 @@ void IDPackLayer::addSearchBar() {
     m_searchBarMenu->addChild(m_searchBar);
 }
 
-void IDPackLayer::showLoading() {
+void IDListLayer::showLoading() {
     m_pageLabel->setString(std::to_string(m_page + 1).c_str());
     m_loadingCircle->setVisible(true);
     m_list->m_listView->setVisible(false);
@@ -192,39 +242,52 @@ void IDPackLayer::showLoading() {
     m_randomButton->setVisible(false);
 }
 
-void IDPackLayer::populateList(std::string query) {
+void IDListLayer::populateList(std::string query) {
     m_fullSearchResults.clear();
 
+    auto& list = PEMONLIST ? IntegratedDemonlist::PEMONLIST : IntegratedDemonlist::AREDL;
     if (!query.empty()) {
         auto queryLowercase = string::toLower(query);
-        for (auto const& pack : IntegratedDemonlist::AREDL_PACKS) {
-            if (string::startsWith(string::toLower(pack.name), queryLowercase)) m_fullSearchResults.push_back(pack);
+        for (auto const& level : list) {
+            if (string::startsWith(string::toLower(level.name), queryLowercase)) m_fullSearchResults.push_back(std::to_string(level.id));
         }
     } else {
-        for (auto const& pack : IntegratedDemonlist::AREDL_PACKS) {
-            m_fullSearchResults.push_back(pack);
+        for (auto const& level : list) {
+            m_fullSearchResults.push_back(std::to_string(level.id));
         }
     }
 
     m_query = query;
 
-    auto winSize = CCDirector::sharedDirector()->getWinSize();
-    if (m_list) m_list->removeMeAndCleanup();
-    auto packs = CCArray::create();
-    auto start = m_page * 10;
-    auto end = std::min((int)m_fullSearchResults.size(), (m_page + 1) * 10);
-    auto searchResults = std::vector<IDDemonPack>(m_fullSearchResults.begin() + start, m_fullSearchResults.begin() + end);
-    for (auto const& pack : searchResults) {
-        packs->addObject(IDPackCell::create(pack));
+    if (m_fullSearchResults.empty()) {
+        loadLevelsFinished(CCArray::create(), "");
+        m_countLabel->setString("");
     }
-    m_list = GJListLayer::create(ListView::create(packs, 100.0f, 356.0f, 190.0f), "AREDL Packs", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
+    else {
+        auto glm = GameLevelManager::sharedState();
+        glm->m_levelManagerDelegate = this;
+        auto searchResults = std::vector<std::string>(m_fullSearchResults.begin() + m_page * 10,
+            m_fullSearchResults.begin() + std::min((int)m_fullSearchResults.size(), (m_page + 1) * 10));
+        auto searchObject = GJSearchObject::create(SearchType::MapPackOnClick, string::join(searchResults, ","));
+        std::string key = searchObject->getKey();
+        if (auto storedLevels = glm->getStoredOnlineLevels(key.substr(std::max(0, (int)key.size() - 256)).c_str())) {
+            loadLevelsFinished(storedLevels, key.c_str());
+            setupPageInfo("", key.c_str());
+        }
+        else glm->getOnlineLevels(searchObject);
+    }
+}
+
+void IDListLayer::loadLevelsFinished(CCArray* levels, const char*) {
+    auto winSize = CCDirector::sharedDirector()->getWinSize();
+    if (m_list->getParent() == this) removeChild(m_list);
+    m_list = GJListLayer::create(CustomListView::create(levels, BoomListType::Level, 190.0f, 356.0f),
+        PEMONLIST ? "Pemonlist" : "All Rated Extreme Demons List", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
     m_list->setZOrder(2);
     m_list->setPosition(winSize / 2 - m_list->getContentSize() / 2);
     addChild(m_list);
     addSearchBar();
     m_searchBar->setString(m_searchBarText);
-    m_countLabel->setString(fmt::format("{} to {} of {}", start + 1, end, m_fullSearchResults.size()).c_str());
-    m_countLabel->limitLabelWidth(100.0f, 0.6f, 0.0f);
     m_countLabel->setVisible(true);
     m_loadingCircle->setVisible(false);
     if (m_fullSearchResults.size() > 10) {
@@ -238,24 +301,41 @@ void IDPackLayer::populateList(std::string query) {
     }
 }
 
-void IDPackLayer::search() {
+void IDListLayer::loadLevelsFailed(const char*) {
+    m_searchBarMenu->setVisible(true);
+    m_countLabel->setVisible(true);
+    m_loadingCircle->setVisible(false);
+    FLAlertLayer::create("Load Failed", "Failed to load levels. Please try again later.", "OK")->show();
+}
+
+void IDListLayer::setupPageInfo(gd::string, const char*) {
+    m_countLabel->setString(fmt::format("{} to {} of {}", m_page * 10 + 1,
+        std::min((int)m_fullSearchResults.size(), (m_page + 1) * 10), m_fullSearchResults.size()).c_str());
+    m_countLabel->limitLabelWidth(100.0f, 0.6f, 0.0f);
+}
+
+void IDListLayer::search() {
     if (m_query != m_searchBarText) {
         showLoading();
-        IntegratedDemonlist::loadAREDLPacks(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle,  [this] {
+        if (PEMONLIST) IntegratedDemonlist::loadPemonlist(std::move(m_pemonlistListener), std::move(m_pemonlistOkListener), m_loadingCircle, [this] {
+            m_page = 0;
+            populateList(m_searchBarText);
+        });
+        else IntegratedDemonlist::loadAREDL(std::move(m_aredlListener), std::move(m_aredlOkListener), m_loadingCircle, [this] {
             m_page = 0;
             populateList(m_searchBarText);
         });
     }
 }
 
-void IDPackLayer::page(int page) {
+void IDListLayer::page(int page) {
     auto maxPage = (m_fullSearchResults.size() + 9) / 10;
     m_page = maxPage > 0 ? (maxPage + (page % maxPage)) % maxPage : 0;
     showLoading();
     populateList(m_query);
 }
 
-void IDPackLayer::keyDown(enumKeyCodes key) {
+void IDListLayer::keyDown(enumKeyCodes key) {
     switch (key)
     {
         case KEY_Left:
@@ -266,9 +346,8 @@ void IDPackLayer::keyDown(enumKeyCodes key) {
         case CONTROLLER_Right:
             if (m_rightButton->isVisible()) page(m_page + 1);
             break;
-        case KEY_Escape:
-        case CONTROLLER_B:
-            keyBackClicked();
+        case KEY_Enter:
+            search();
             break;
         default:
             CCLayer::keyDown(key);
@@ -276,16 +355,18 @@ void IDPackLayer::keyDown(enumKeyCodes key) {
     }
 }
 
-void IDPackLayer::keyBackClicked() {
+void IDListLayer::keyBackClicked() {
     CCDirector::sharedDirector()->popSceneWithTransition(0.5f, kPopTransitionFade);
 }
 
-void IDPackLayer::setIDPopupClosed(SetIDPopup*, int page) {
+void IDListLayer::setIDPopupClosed(SetIDPopup*, int page) {
     m_page = std::min(std::max(page - 1, 0), ((int)m_fullSearchResults.size() - 1) / 10);
     showLoading();
     populateList(m_query);
 }
 
-IDPackLayer::~IDPackLayer() {
+IDListLayer::~IDListLayer() {
     CC_SAFE_RELEASE(m_loadingCircle);
+    auto glm = GameLevelManager::sharedState();
+    if (glm->m_levelManagerDelegate == this) glm->m_levelManagerDelegate = nullptr;
 }

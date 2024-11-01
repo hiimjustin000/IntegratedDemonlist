@@ -1,30 +1,30 @@
-#include "IDPackCell.hpp"
+#include "../IntegratedDemonlist.hpp"
 
-class IDPackLayer : public CCLayer, SetIDPopupDelegate {
+class IDPackLayer : public cocos2d::CCLayer, SetIDPopupDelegate {
 private:
     inline static const char* AREDL_PACK_INFO =
         "The <cg>All Rated Extreme Demons List</c> (<cg>AREDL</c>) has <cp>packs</c> of <cr>extreme demons</c> that are <cj>related</c> in some way.\n"
         "If all levels in a pack are <cl>completed</c>, the pack can earn <cy>points</c> on <cg>aredl.net</c>.";
 public:
     static IDPackLayer* create();
-    static CCScene* scene();
+    static cocos2d::CCScene* scene();
 
     void search();
     void page(int);
-    void keyDown(enumKeyCodes) override;
+    void keyDown(cocos2d::enumKeyCodes) override;
     void keyBackClicked() override;
 
     ~IDPackLayer() override;
 protected:
-    EventListener<web::WebTask> m_aredlListener;
-    EventListener<web::WebTask> m_aredlOkListener;
+    geode::EventListener<geode::utils::web::WebTask> m_aredlListener;
+    geode::EventListener<geode::utils::web::WebTask> m_aredlOkListener;
     GJListLayer* m_list;
-    CCLabelBMFont* m_listLabel;
+    cocos2d::CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
-    CCMenu* m_searchBarMenu;
-    TextInput* m_searchBar;
-    CCLabelBMFont* m_countLabel;
-    CCLabelBMFont* m_pageLabel;
+    cocos2d::CCMenu* m_searchBarMenu;
+    geode::TextInput* m_searchBar;
+    cocos2d::CCLabelBMFont* m_countLabel;
+    cocos2d::CCLabelBMFont* m_pageLabel;
     CCMenuItemSpriteExtra* m_backButton;
     CCMenuItemSpriteExtra* m_leftButton;
     CCMenuItemSpriteExtra* m_rightButton;

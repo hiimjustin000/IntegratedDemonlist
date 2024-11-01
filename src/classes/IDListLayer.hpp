@@ -1,6 +1,6 @@
-#include "IDPackLayer.hpp"
+#include <Geode/utils/web.hpp>
 
-class IDListLayer : public CCLayer, SetIDPopupDelegate, LevelManagerDelegate {
+class IDListLayer : public cocos2d::CCLayer, SetIDPopupDelegate, LevelManagerDelegate {
 private:
     inline static bool PEMONLIST = false;
     inline static const char* AREDL_INFO =
@@ -11,26 +11,26 @@ private:
         "It is managed by <cy>camila314</c>, <cy>Extatica</c>, <cy>IvanCrafter026</c>, <cy>Megu</c>, and <cy>Voiddle</c>.";
 public:
     static IDListLayer* create();
-    static CCScene* scene();
+    static cocos2d::CCScene* scene();
 
     void search();
     void page(int);
-    void keyDown(enumKeyCodes) override;
+    void keyDown(cocos2d::enumKeyCodes) override;
     void keyBackClicked() override;
 
     ~IDListLayer() override;
 protected:
-    EventListener<web::WebTask> m_aredlListener;
-    EventListener<web::WebTask> m_aredlOkListener;
-    EventListener<web::WebTask> m_pemonlistListener;
-    EventListener<web::WebTask> m_pemonlistOkListener;
+    geode::EventListener<geode::utils::web::WebTask> m_aredlListener;
+    geode::EventListener<geode::utils::web::WebTask> m_aredlOkListener;
+    geode::EventListener<geode::utils::web::WebTask> m_pemonlistListener;
+    geode::EventListener<geode::utils::web::WebTask> m_pemonlistOkListener;
     GJListLayer* m_list;
-    CCLabelBMFont* m_listLabel;
+    cocos2d::CCLabelBMFont* m_listLabel;
     LoadingCircle* m_loadingCircle;
-    CCMenu* m_searchBarMenu;
-    TextInput* m_searchBar;
-    CCLabelBMFont* m_countLabel;
-    CCLabelBMFont* m_pageLabel;
+    cocos2d::CCMenu* m_searchBarMenu;
+    geode::TextInput* m_searchBar;
+    cocos2d::CCLabelBMFont* m_countLabel;
+    cocos2d::CCLabelBMFont* m_pageLabel;
     InfoAlertButton* m_infoButton;
     CCMenuItemSpriteExtra* m_backButton;
     CCMenuItemSpriteExtra* m_leftButton;
@@ -50,9 +50,9 @@ protected:
     void addSearchBar();
     void showLoading();
     void populateList(std::string query);
-    void loadLevelsFinished(CCArray*, const char*) override;
+    void loadLevelsFinished(cocos2d::CCArray*, const char*) override;
     void loadLevelsFailed(const char*) override;
-    void loadLevelsFinished(CCArray* levels, const char* key, int) override {
+    void loadLevelsFinished(cocos2d::CCArray* levels, const char* key, int) override {
         loadLevelsFinished(levels, key);
     }
     void loadLevelsFailed(const char* key, int) override {
