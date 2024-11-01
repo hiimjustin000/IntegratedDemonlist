@@ -21,7 +21,7 @@ public:
     inline static bool AREDL_LOADED = false;
     inline static bool PEMONLIST_LOADED = false;
 
-    static void isOk(std::string const&, geode::EventListener<geode::utils::web::WebTask>&&, std::function<void(bool, int)> const&);
+    static void isOk(std::string const&, geode::EventListener<geode::utils::web::WebTask>&&, bool, std::function<void(bool, int)> const&);
     static void loadAREDL(
         geode::EventListener<geode::utils::web::WebTask>&&,
         geode::EventListener<geode::utils::web::WebTask>&&,

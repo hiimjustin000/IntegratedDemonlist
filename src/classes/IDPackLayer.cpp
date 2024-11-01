@@ -63,7 +63,9 @@ bool IDPackLayer::init() {
     menu->setPosition(0.0f, 0.0f);
     addChild(menu);
 
-    m_backButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_01_001.png", 1.0f, [this](auto) { keyBackClicked(); });
+    m_backButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_01_001.png", 1.0f, [this](auto) {
+        CCDirector::sharedDirector()->popSceneWithTransition(0.5f, kPopTransitionFade);
+    });
     m_backButton->setPosition(25.0f, winSize.height - 25.0f);
     menu->addChild(m_backButton);
 
@@ -142,6 +144,7 @@ bool IDPackLayer::init() {
     m_loadingCircle->show();
 
     showLoading();
+    setKeypadEnabled(true);
     setKeyboardEnabled(true);
 
     if (!IntegratedDemonlist::AREDL_PACKS.empty()) populateList("");
@@ -259,8 +262,7 @@ void IDPackLayer::page(int page) {
 }
 
 void IDPackLayer::keyDown(enumKeyCodes key) {
-    switch (key)
-    {
+    switch (key) {
         case KEY_Left:
         case CONTROLLER_Left:
             if (m_leftButton->isVisible()) page(m_page - 1);

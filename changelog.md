@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.7.1 (2024-11-01)
+- Fixed a bug where the demonlist would not close when the escape key was pressed
+
 ## v1.7.0 (2024-11-01)
 - Changed ranking text to load individually on cell load rather than all at once in the main menu
 
@@ -83,7 +86,7 @@
 
 ## v1.4.7 (2024-05-15)
 - Fixed a bug where two-player demons would appear twice in the demonlist
-- Fixed a few bugs with the demonlist search    
+- Fixed a few bugs with the demonlist search
 - Changed the logo to be more in line with Geode's logo style
 
 ## v1.4.6 (2024-04-30)
