@@ -24,7 +24,7 @@ bool IDPackLayer::init() {
     if (!CCLayer::init()) return false;
 
     setID("IDPackLayer");
-    auto winSize = CCDirector::sharedDirector()->getWinSize();
+    auto winSize = CCDirector::get()->getWinSize();
 
     auto bg = CCSprite::create("GJ_gradientBG.png");
     auto& bgSize = bg->getTextureRect().size;
@@ -49,7 +49,7 @@ bool IDPackLayer::init() {
     m_countLabel = CCLabelBMFont::create("", "goldFont.fnt");
     m_countLabel->setAnchorPoint({ 1.0f, 1.0f });
     m_countLabel->setScale(0.6f);
-    m_countLabel->setPosition(winSize.width - 7.0f, winSize.height - 3.0f);
+    m_countLabel->setPosition({ winSize.width - 7.0f, winSize.height - 3.0f });
     addChild(m_countLabel);
 
     m_list = GJListLayer::create(ListView::create(CCArray::create(), 100.0f, 356.0f, 190.0f), "AREDL Packs", { 0, 0, 0, 180 }, 356.0f, 220.0f, 0);
@@ -60,27 +60,27 @@ bool IDPackLayer::init() {
     addSearchBar();
 
     auto menu = CCMenu::create();
-    menu->setPosition(0.0f, 0.0f);
+    menu->setPosition({ 0.0f, 0.0f });
     addChild(menu);
 
     m_backButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_01_001.png", 1.0f, [this](auto) {
-        CCDirector::sharedDirector()->popSceneWithTransition(0.5f, kPopTransitionFade);
+        CCDirector::get()->popSceneWithTransition(0.5f, kPopTransitionFade);
     });
-    m_backButton->setPosition(25.0f, winSize.height - 25.0f);
+    m_backButton->setPosition({ 25.0f, winSize.height - 25.0f });
     menu->addChild(m_backButton);
 
     m_leftButton = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_03_001.png", 1.0f, [this](auto) { page(m_page - 1); });
-    m_leftButton->setPosition(24.0f, winSize.height / 2);
+    m_leftButton->setPosition({ 24.0f, winSize.height / 2 });
     menu->addChild(m_leftButton);
 
     auto rightBtnSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_03_001.png");
     rightBtnSpr->setFlipX(true);
     m_rightButton = CCMenuItemExt::createSpriteExtra(rightBtnSpr, [this](auto) { page(m_page + 1); });
-    m_rightButton->setPosition(winSize.width - 24.0f, winSize.height / 2);
+    m_rightButton->setPosition({ winSize.width - 24.0f, winSize.height / 2 });
     menu->addChild(m_rightButton);
 
     auto infoButton = InfoAlertButton::create("AREDL Packs", AREDL_PACK_INFO, 1.0f);
-    infoButton->setPosition(30.0f, 30.0f);
+    infoButton->setPosition({ 30.0f, 30.0f });
     menu->addChild(infoButton, 2);
 
     auto refreshBtnSpr = CCSprite::createWithSpriteFrameName("GJ_updateBtn_001.png");
@@ -135,7 +135,7 @@ bool IDPackLayer::init() {
     firstArrow->addChild(otherFirstArrow);
     firstArrow->setScale(0.4f);
     m_firstButton = CCMenuItemExt::createSpriteExtra(firstArrow, [this](auto) { page(0); });
-    m_firstButton->setPosition(21.5f, m_lastButton->getPositionY());
+    m_firstButton->setPosition({ 21.5f, m_lastButton->getPositionY() });
     menu->addChild(m_firstButton);
 
     m_loadingCircle = LoadingCircle::create();
@@ -154,28 +154,28 @@ bool IDPackLayer::init() {
 }
 
 void IDPackLayer::addSearchBar() {
-    auto winSize = CCDirector::sharedDirector()->getWinSize();
+    auto winSize = CCDirector::get()->getWinSize();
 
     m_searchBarMenu = CCMenu::create();
     m_searchBarMenu->setContentSize({ 356.0f, 30.0f });
-    m_searchBarMenu->setPosition(0.0f, 190.0f);
+    m_searchBarMenu->setPosition({ 0.0f, 190.0f });
     m_list->addChild(m_searchBarMenu);
 
     m_searchBarMenu->addChild(CCLayerColor::create({ 194, 114, 62, 255 }, 356.0f, 30.0f));
 
     if (!m_query.empty()) {
         auto searchButton = CCMenuItemExt::createSpriteExtraWithFilename("ID_findBtnOn_001.png"_spr, 0.7f, [this](auto) { search(); });
-        searchButton->setPosition(337.0f, 15.0f);
+        searchButton->setPosition({ 337.0f, 15.0f });
         m_searchBarMenu->addChild(searchButton);
     } else {
         auto searchButton = CCMenuItemExt::createSpriteExtraWithFrameName("gj_findBtn_001.png", 0.7f, [this](auto) { search(); });
-        searchButton->setPosition(337.0f, 15.0f);
+        searchButton->setPosition({ 337.0f, 15.0f });
         m_searchBarMenu->addChild(searchButton);
     }
 
     m_searchBar = TextInput::create(413.3f, "Search Packs...");
     m_searchBar->setCommonFilter(CommonFilter::Any);
-    m_searchBar->setPosition(165.0f, 15.0f);
+    m_searchBar->setPosition({ 165.0f, 15.0f });
     m_searchBar->setTextAlign(TextInputAlign::Left);
     m_searchBar->getInputNode()->setLabelPlaceholderScale(0.53f);
     m_searchBar->getInputNode()->setMaxLabelScale(0.53f);
@@ -204,7 +204,7 @@ void IDPackLayer::populateList(std::string query) {
     if (!query.empty()) {
         auto queryLowercase = string::toLower(query);
         for (auto const& pack : IntegratedDemonlist::AREDL_PACKS) {
-            if (string::startsWith(string::toLower(pack.name), queryLowercase)) m_fullSearchResults.push_back(pack);
+            if (string::contains(string::toLower(pack.name), queryLowercase)) m_fullSearchResults.push_back(pack);
         }
     } else {
         for (auto const& pack : IntegratedDemonlist::AREDL_PACKS) {
@@ -214,7 +214,7 @@ void IDPackLayer::populateList(std::string query) {
 
     m_query = query;
 
-    auto winSize = CCDirector::sharedDirector()->getWinSize();
+    auto winSize = CCDirector::get()->getWinSize();
     if (m_list) m_list->removeMeAndCleanup();
     auto packs = CCArray::create();
     auto start = m_page * 10;
@@ -281,7 +281,7 @@ void IDPackLayer::keyDown(enumKeyCodes key) {
 }
 
 void IDPackLayer::keyBackClicked() {
-    CCDirector::sharedDirector()->popSceneWithTransition(0.5f, kPopTransitionFade);
+    CCDirector::get()->popSceneWithTransition(0.5f, kPopTransitionFade);
 }
 
 void IDPackLayer::setIDPopupClosed(SetIDPopup*, int page) {

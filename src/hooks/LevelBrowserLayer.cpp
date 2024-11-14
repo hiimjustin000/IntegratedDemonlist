@@ -8,21 +8,23 @@ class $modify(IDLevelBrowserLayer, LevelBrowserLayer) {
         if (!LevelBrowserLayer::init(object)) return false;
 
         if (object->m_searchType == SearchType::MapPack) {
-            auto winSize = CCDirector::sharedDirector()->getWinSize();
+            auto winSize = CCDirector::get()->getWinSize();
             auto demonlistButtonSprite = CircleButtonSprite::createWithSprite("ID_demonBtn_001.png"_spr);
             demonlistButtonSprite->getTopNode()->setScale(1.0f);
-            auto demonlistButton = CCMenuItemExt::createSpriteExtra(demonlistButtonSprite, [](auto) {
-                CCDirector::sharedDirector()->pushScene(CCTransitionFade::create(0.5f, IDPackLayer::scene()));
-            });
+            auto demonlistButton = CCMenuItemSpriteExtra::create(demonlistButtonSprite, this, menu_selector(IDLevelBrowserLayer::onDemonlistPacks));
             demonlistButton->setID("demonlist-button"_spr);
             auto y = demonlistButtonSprite->getContentHeight() / 2 + 4.0f;
             auto menu = CCMenu::create();
             menu->addChild(demonlistButton);
-            menu->setPosition(winSize.width - y, y);
+            menu->setPosition({ winSize.width - y, y });
             menu->setID("demonlist-menu"_spr);
             addChild(menu, 2);
         }
 
         return true;
+    }
+
+    void onDemonlistPacks(CCObject* sender) {
+        CCDirector::get()->pushScene(CCTransitionFade::create(0.5f, IDPackLayer::scene()));
     }
 };

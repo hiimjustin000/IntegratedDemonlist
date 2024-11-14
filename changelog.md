@@ -1,4 +1,8 @@
 # Integrated Demonlist Changelog
+## v1.7.2-beta.1 (2024-11-13)
+- Tweaked the search algorithm to search every part of the demon's name, rather than just the beginning
+- Ported to Geometry Dash v2.207
+
 ## v1.7.1 (2024-11-01)
 - Fixed a bug where the demonlist would not close when the escape key was pressed
 

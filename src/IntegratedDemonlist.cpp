@@ -32,20 +32,17 @@ void IntegratedDemonlist::loadAREDL(
 
             AREDL_LOADED = true;
             AREDL.clear();
-            auto str = res->string().value();
-            std::string error;
-            auto json = matjson::parse(str, error).value_or(matjson::Array());
-            if (!error.empty()) log::error("Failed to parse AREDL: {}", error);
-            if (json.is_array()) for (auto const& level : json.as_array()) {
-                if (level.contains("legacy") && level["legacy"].is_bool() && level["legacy"].as_bool()) continue;
-                if (!level.contains("level_id") || !level["level_id"].is_number()) continue;
-                if (!level.contains("name") || !level["name"].is_string()) continue;
-                if (!level.contains("position") || !level["position"].is_number()) continue;
+            auto json = res->json().unwrapOr(matjson::Value());
+            if (json.isArray()) for (auto const& level : json.asArray().unwrap()) {
+                if (level.contains("legacy") && level["legacy"].isBool() && level["legacy"].asBool().unwrap()) continue;
+                if (!level.contains("level_id") || !level["level_id"].isNumber()) continue;
+                if (!level.contains("name") || !level["name"].isString()) continue;
+                if (!level.contains("position") || !level["position"].isNumber()) continue;
 
                 AREDL.push_back({
-                    level["level_id"].as_int(),
-                    level["name"].as_string(),
-                    level["position"].as_int()
+                    (int)level["level_id"].asInt().unwrap(),
+                    level["name"].asString().unwrap(),
+                    (int)level["position"].asInt().unwrap()
                 });
             }
             callback();
@@ -77,16 +74,20 @@ void IntegratedDemonlist::loadAREDLPacks(
             }
 
             AREDL_PACKS.clear();
-            auto str = res->string().value();
-            std::string error;
-            auto json = matjson::parse(str, error).value_or(matjson::Array());
-            if (!error.empty()) log::error("Failed to parse AREDL packs: {}", error);
-            if (json.is_array()) for (auto const& pack : json.as_array()) {
+            auto json = res->json().unwrapOr(matjson::Value());
+            if (json.isArray()) for (auto const& pack : json.asArray().unwrap()) {
+                if (!pack.contains("name") || !pack["name"].isString()) continue;
+                if (!pack.contains("points") || !pack["points"].isNumber()) continue;
+                if (!pack.contains("levels") || !pack["levels"].isArray()) continue;
+
                 std::vector<int> levels;
-                for (auto const& level : pack["levels"].as_array()) levels.push_back(level["level_id"].as_int());
+                for (auto const& level : pack["levels"].asArray().unwrap()) {
+                    if (!level.contains("level_id") || !level["level_id"].isNumber()) continue;
+                    levels.push_back(level["level_id"].asInt().unwrap());
+                }
                 AREDL_PACKS.push_back({
-                    pack["name"].as_string(),
-                    pack["points"].as_double(),
+                    pack["name"].asString().unwrap(),
+                    pack["points"].asDouble().unwrap(),
                     levels
                 });
             }
@@ -123,19 +124,16 @@ void IntegratedDemonlist::loadPemonlist(
 
             PEMONLIST_LOADED = true;
             PEMONLIST.clear();
-            auto str = res->string().value();
-            std::string error;
-            auto json = matjson::parse(str, error).value_or(matjson::Object());
-            if (!error.empty()) log::error("Failed to parse Pemonlist: {}", error);
-            if (json.is_object() && json.contains("data") && json["data"].is_array()) for (auto const& level : json["data"].as_array()) {
-                if (!level.contains("level_id") || !level["level_id"].is_number()) continue;
-                if (!level.contains("name") || !level["name"].is_string()) continue;
-                if (!level.contains("placement") || !level["placement"].is_number()) continue;
+            auto json = res->json().unwrapOr(matjson::Value());
+            if (json.isObject() && json.contains("data") && json["data"].isArray()) for (auto const& level : json["data"].asArray().unwrap()) {
+                if (!level.contains("level_id") || !level["level_id"].isNumber()) continue;
+                if (!level.contains("name") || !level["name"].isString()) continue;
+                if (!level.contains("placement") || !level["placement"].isNumber()) continue;
 
                 PEMONLIST.push_back({
-                    level["level_id"].as_int(),
-                    level["name"].as_string(),
-                    level["placement"].as_int()
+                    (int)level["level_id"].asInt().unwrap(),
+                    level["name"].asString().unwrap(),
+                    (int)level["placement"].asInt().unwrap()
                 });
             }
             callback();

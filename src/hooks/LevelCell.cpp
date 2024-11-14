@@ -35,14 +35,11 @@ class $modify(IDLevelCell, LevelCell) {
         f->m_soloListener.bind([this, f, levelID, platformer](web::WebTask::Event* e) {
             if (auto res = e->getValue()) {
                 if (!res->ok()) return;
-                auto str = res->string().value();
-                std::string error;
-                auto json = matjson::parse(str, error).value_or(matjson::Object());
-                if (!error.empty()) log::error("Failed to parse {} level {}: {}", platformer ? "Pemonlist" : "AREDL", levelID, error);
+                auto json = res->json().unwrapOr(matjson::Value());
                 auto key = platformer ? "placement" : "position";
-                if (!json.is_object() || !json.contains(key) || !json[key].is_number()) return;
+                if (!json.isObject() || !json.contains(key) || !json[key].isNumber()) return;
 
-                auto position1 = json[key].as_int();
+                int position1 = json[key].asInt().unwrap();
                 auto& list = platformer ? IntegratedDemonlist::PEMONLIST : IntegratedDemonlist::AREDL;
                 std::string levelName = m_level->m_levelName;
                 list.push_back({ levelID, levelName, position1 });
@@ -58,13 +55,10 @@ class $modify(IDLevelCell, LevelCell) {
                             return;
                         }
 
-                        auto str = res->string().value();
-                        std::string error;
-                        auto json = matjson::parse(str, error).value_or(matjson::Object());
-                        if (!error.empty()) log::error("Failed to parse AREDL two-player level {}: {}", levelID, error);
-                        if (!json.is_object() || !json.contains("position") || !json["position"].is_number()) return;
+                        auto json = res->json().unwrapOr(matjson::Value());
+                        if (!json.isObject() || !json.contains("position") || !json["position"].isNumber()) return;
 
-                        auto position2 = json["position"].as_int();
+                        int position2 = json["position"].asInt().unwrap();
                         IntegratedDemonlist::AREDL.push_back({ levelID, levelName, position2 });
                         addRank({ std::to_string(position1), std::to_string(position2) }, false);
                     }
@@ -80,7 +74,7 @@ class $modify(IDLevelCell, LevelCell) {
     void addRank(std::vector<std::string> const& positions, bool platformer) {
         auto rankTextNode = CCLabelBMFont::create(fmt::format("#{} {}", string::join(positions, "/#"), platformer ? "Pemonlist" : "AREDL").c_str(), "chatFont.fnt");
         auto dailyLevel = m_level->m_dailyID.value() > 0;
-        rankTextNode->setPosition(346.0f, dailyLevel ? 6.0f : 1.0f);
+        rankTextNode->setPosition({ 346.0f, dailyLevel ? 6.0f : 1.0f });
         rankTextNode->setAnchorPoint({ 1.0f, 0.0f });
         rankTextNode->setScale(m_compactView ? 0.45f : 0.6f);
         auto isWhite = Mod::get()->getSettingValue<bool>("white-rank");
@@ -89,9 +83,9 @@ class $modify(IDLevelCell, LevelCell) {
         rankTextNode->setID("level-rank-label"_spr);
         m_mainLayer->addChild(rankTextNode);
 
-        if (auto levelSizeLabel = m_mainLayer->getChildByID("hiimjustin000.level_size/size-label")) levelSizeLabel->setPosition(
+        if (auto levelSizeLabel = m_mainLayer->getChildByID("hiimjustin000.level_size/size-label")) levelSizeLabel->setPosition({
             346.0f - (m_compactView ? rankTextNode->getScaledContentWidth() + 3.0f : 0.0f),
             !m_compactView ? 12.0f : 1.0f
-        );
+        });
     }
 };
