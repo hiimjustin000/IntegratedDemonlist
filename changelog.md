@@ -1,4 +1,7 @@
 # Integrated Demonlist Changelog
+## v1.7.2 (2024-11-15)
+- Ported to Geode v4.0.0-beta.1
+
 ## v1.7.2-beta.1 (2024-11-13)
 - Tweaked the search algorithm to search every part of the demon's name, rather than just the beginning
 - Ported to Geometry Dash v2.207
